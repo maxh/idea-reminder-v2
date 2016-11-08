@@ -1,12 +1,11 @@
 import firebase from 'firebase/firebase-browser';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import 'bootstrap/dist/css/bootstrap.css';
 import App from './App';
 import { Provider } from 'react-redux';
 import { createStore, combineReducers } from 'redux';
-
 import './index.css';
-import 'bootstrap/dist/css/bootstrap.css';
 
 var config = {
   apiKey: 'AIzaSyDjcb-gDiFSbjnb6Q10bKxAPnjX1rn2OWk',
@@ -34,12 +33,10 @@ const reducer = combineReducers({user});
 const store = createStore(reducer);
 
 firebase.auth().onAuthStateChanged(function(user) {
-  if (user) {
-     store.dispatch({
-      type: 'SET_USER',
-      user: user
-    });
-  }
+   store.dispatch({
+    type: 'SET_USER',
+    user: user
+  });
 });
 
 ReactDOM.render(

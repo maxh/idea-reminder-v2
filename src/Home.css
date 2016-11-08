@@ -1,0 +1,41 @@
+.\/ { 
+  background: url(marin-sunrise.jpg) no-repeat center center fixed; 
+  background-size: cover;
+  min-height: 100%;
+}
+
+.\/ .jumbotron {
+	text-align: center;
+	padding-top: 10vh;
+}
+
+.\/ .jumbotron h2 {
+	font-size: 42px;
+	font-weight: bold;
+}
+
+.\/ .grid {
+	width: 100%;
+}
+
+.\/ .how {
+	margin-left: 20%;
+	margin-right: 20%;
+	width: 60%;
+}
+
+.\/ .how .steps {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 768px) {
+	.\/ .how .steps {
+	  flex-direction: row;
+	}
+}
+
+.\/ .steps>div {
+	flex: 1;
+	padding: 5px;
+}
