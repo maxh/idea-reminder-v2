@@ -98,6 +98,7 @@ def send_email_from_template(user_email, template, params):
   if isinstance(template, basestring):
     template = TEMPLATES.get_template(template + '.html')
   html_body = template.render(format='html', **params)
+  print
   body = template.render(**params)
   send_email(user_email, template.module.subject, body, html_body)
 
