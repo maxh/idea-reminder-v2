@@ -1,0 +1,38 @@
+runtime: python27
+api_version: 1
+threadsafe: true
+
+libraries:
+- name: jinja2
+  version: latest
+
+handlers:
+- url: /api/.*
+  script: server.api.app
+
+- url: /mail/.*
+  script: server.mail.app
+  login: admin
+
+- url: /
+  static_files: client/build/index.html
+  upload: client/build/index\.html
+
+- url: /
+  static_dir: client/build
+
+- url: /.*
+  script: not_found.app
+
+skip_files:
+- ^(.*/)?#.*#$
+- ^(.*/)?.*~$
+- ^(.*/)?.*\.py[co]$
+- ^(.*/)?.*/RCS/.*$
+- ^(.*/)?\..*$
+- ^client/node_modules/.*$
+- ^client/public/.*$
+- ^client/src/.*$
+- ^client/package\.json
+- ^client/README\.md
+- ^env$  # Python virtual environment folder.

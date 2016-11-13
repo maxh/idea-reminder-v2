@@ -1,0 +1,15 @@
+
+{% set subject = app_name + ' Unsubscribe Confirmation' %}
+{% if format == 'html' %}
+<p>
+  You are now unsubscribed from {{ app_name }}.
+  You can still <a href="{{ responses_link }}">view your previous replies</a>.
+  (Feel free to delete that spreadsheet in Google Drive if you don't want it around.)
+</p>
+{% else %}
+You are now unsubscribed from {{ app_name }}. You can still view your previous replies:
+
+{{ responses_link }}
+
+(Feel free to delete that spreadsheet in Google Drive if you don't want it around.)
+{% endif %}
