@@ -8,9 +8,12 @@ import webapp2
 
 from validate_email import validate_email
 
+from google.appengine.ext import ndb
+
 import config
 import mail
 import models
+
 
 class CleanException(webapp2.HTTPException):
   def __init__(self, message, email):
@@ -66,15 +69,15 @@ class Users(BaseHandler):
 
     link_code = id_generator()
     expiration = datetime.datetime.now() + datetime.timedelta(days=7)
-    models.Link(parent=user, expiration=expiration, link_code=link_code).put()
-    link = posixpath.join(config.URL, 'verify/%s/%s' % (user.key().urlsafe(), link_code))
+    models.Link(parent=user.key, expiration=expiration, link_code=link_code).put()
+    link = posixpath.join(config.URL, 'verify/%s/%s' % (user.key.urlsafe(), link_code))
 
     mail.send_email_from_template(email, 'welcome', {'verification_link': link})
 
   def patch(self, user_id):
     """Applies the patch in the request body to the user with the id."""
     user_key = ndb.Key(urlsafe=user_id)
-    user = key.get()
+    user = user_key.get()
     if user is None:
       self.abort_clean('Invalid user ID.')
 
@@ -90,9 +93,9 @@ class Users(BaseHandler):
       if body.get('isVerified'):
         if user.is_verified:
           self.abort_clean(
-              'The subscription for "%s" has already been verified.' % link.email)
+              'The subscription for "%s" has already been verified.' % user.email)
         else:
-          user.isVerified = True
+          user.is_verified = True
 
     user.put()
 
@@ -118,7 +121,7 @@ webapp2.WSGIApplication.allowed_methods = new_allowed_methods
 
 
 app = webapp2.WSGIApplication([
-  webapp2.Route(r'/api/users/<user_id:[\d\w]{50}>/ideas', Ideas),
-  webapp2.Route(r'/api/users/<user_id:[\d\w]{50}>', Users),
+  webapp2.Route(r'/api/users/<user_id:[^/]*>/ideas', Ideas),
+  webapp2.Route(r'/api/users/<user_id:[^/]*>', Users),
   webapp2.Route(r'/api/users', Users),
 ], debug=True)
