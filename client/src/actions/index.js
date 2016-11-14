@@ -30,7 +30,7 @@ export function startSubscribe(email) {
       headers: new Headers({'Content-Type': 'application/json'}),
     	body: JSON.stringify({'email': email})
     };
-    return fetch('/api/subscribe', options)
+    return fetch('/api/users', options)
         .then(response => {
           if (response.ok) {
             dispatch({type: SUBSCRIBE_SUCCESS});
@@ -65,15 +65,18 @@ function verifySuccess(email) {
   }
 }
 
-export function startVerify(code) {
+export function startVerify(userId, linkCode) {
   return dispatch => {
     dispatch({type: VERIFY_REQUEST});
     let options = {
-      method: 'POST',
-      headers: new Headers({'Content-Type': 'application/json'}),
-      body: JSON.stringify({'code': code})
+      method: 'PATCH',
+      headers: new Headers({
+        'Content-Type': 'application/json',
+        'X-IdeaReminder-LinkCode': linkCode
+      }),
+      body: JSON.stringify({'isVerified': true})
     };
-    return fetch('/api/verify', options)
+    return fetch(`/api/users/${userId}`, options)
         .then(response => {
           var contentType = response.headers.get('content-type');
           if (contentType && contentType.indexOf('application/json') !== -1) {

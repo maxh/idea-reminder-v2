@@ -12,105 +12,115 @@ import config
 import mail
 import models
 
+class CleanException(webapp2.HTTPException):
+  def __init__(self, message, email):
+    self.code = 400
+    self.message = message
+    self.email = email
+
 
 class BaseHandler(webapp2.RequestHandler):
 
   def handle_exception(self, exception, debug):
     logging.exception(exception)
-    logging.info('Exception handled.')
 
-    if isinstance(exception, webapp2.HTTPException):
-      try:
-        result = {
-            'status': 'error',
-            'status_code': exception.code,
-            'message': exception.explanation,
-         }
-        self.response.write(json.dumps(result))
+    try:
+      if isinstance(exception, webapp2.HTTPException):
         self.response.set_status(exception.code)
+        result = {'message': exception.message}
+        if isinstance(exception, CleanException):
+          if exception.email is not None:
+            # Include the email address in case it's useful.
+            result['email'] = exception.email
         self.response.headers['Content-Type'] = 'application/json'
+        self.response.write(json.dumps(result))
         return
-      except:
-        pass
+    except:
+      pass
 
     self.response.set_status(500)
 
-
-class Verify(BaseHandler):
-
-  def post(self):
-    body = json.loads(self.request.body)
-    code = body.get('code')
-
-    link = models.Link.query(models.Link.code == code).get()
-    if link is None or link.expiration < datetime.datetime.now():
-      self.abort(
-          400, explanation='This verification code has expired.')
-
-    account = models.Account.query(models.Account.email == link.email).get()
-    if account.verified:
-      self.abort(
-        400, explanation='The subscription for "%s" has already been verified.' % link.email)
-
-    account.verified = True
-    account.put()
-    self.response.write(json.dumps({'email': link.email}))
-    self.response.headers['Content-Type'] = 'application/json'
+  def abort_clean(self, message, email=None):
+    raise CleanException(message, email)
 
 
-class List(BaseHandler):
-
-  def get(self):
-    body = json.loads(self.request.body)
-    code = body.get('code')
-
-    link = models.Link.query(models.Link.code == code).get()
-    if link is None or link.expiration < datetime.datetime.now():
-      self.abort(
-          400, explanation='This verification code has expired.')
-
-    account = models.Account.query(models.Account.email == link.email).get()
-    ideas = models.Idea.query(models.Idea.customer == account.key).fetch()
-
-    account.verified = True
-    account.put()
-    self.response.write(json.dumps({'email': link.email}))
-    self.response.headers['Content-Type'] = 'application/json'
-
-
-class Subscribe(BaseHandler):
+class Users(BaseHandler):
+  """RESTful endpoints for creating and updating users."""
 
   def post(self):
+    """Creates a user."""
     body = json.loads(self.request.body)
     email = body.get('email')
 
     if email is None or email == '':
-      self.abort(400, explanation='Please enter an email address.')
+      self.abort_clean('Please provide an email address.')
 
     if not validate_email(email):
-      self.abort(
-          400, explanation='The email address "%s" is invalid.' % email)
+      self.abort_clean('The email address "%s" is invalid.' % email)
 
-    if models.Account.query(models.Account.email == email).get():
-      self.abort(
-          400,
-          explanation='The email address "%s" is already subscribed.' % email)
+    if models.User.query(models.User.email == email).get():
+      self.abort_clean('The email address "%s" is already subscribed.' % email)
 
+    user_id = id_generator()    
+    user = models.User(email=email, user_id=user_id)
+    user.put()
+
+    link_code = id_generator()
     expiration = datetime.datetime.now() + datetime.timedelta(days=7)
-    code = id_generator()
-    models.Link(email=email, expiration=expiration, code=code).put()
-    link = posixpath.join(config.URL, 'verify/%s' % code)
+    models.Link(user_id=user_id, expiration=expiration, link_code=link_code).put()
+    link = posixpath.join(config.URL, 'verify/%s/%s' % (user_id, link_code))
+
     mail.send_email_from_template(email, 'welcome', {'verification_link': link})
 
-    account = models.Account(email=email)
-    account.put()
+  def patch(self, user_id):
+    """Applies the patch in the request body to the user with the id."""
+    user = models.User.query(models.User.user_id == user_id).get()
+    if user is None:
+      self.abort_clean('Invalid user ID.')
+
+    link_code = self.request.headers.get('X-IdeaReminder-LinkCode')
+    link = models.Link.query(models.Link.link_code == link_code).get()
+    if link is None or link.expiration < datetime.datetime.now():
+      self.abort_clean('This link has expired.', user.email)
+
+    link_user = models.User.query(models.User.user_id == link.user_id).get()
+    if link_user != user:
+      self.abort_clean('This link is invalid.')
+
+    body = json.loads(self.request.body)
+
+    if 'isVerified' in body:
+      if body.get('isVerified'):
+        if user.isVerified:
+          self.abort_clean(
+              'The subscription for "%s" has already been verified.' % link.email)
+        else:
+          user.isVerified = True
+
+    user.put()
+
+    self.response.write(json.dumps(user.to_dict()))
+    self.response.headers['Content-Type'] = 'application/json'
 
 
-def id_generator(size=100, chars=string.ascii_lowercase + string.digits):
+class Ideas(BaseHandler):
+  """RESTful endpoint for listing ideas."""
+
+  def get(self):
+    pass
+
+
+def id_generator(size=50, chars=string.ascii_lowercase + string.digits):
   return ''.join(random.choice(chars) for _ in range(size))
 
+
+# Add PATCH support to webapp2.
+allowed_methods = webapp2.WSGIApplication.allowed_methods
+new_allowed_methods = allowed_methods.union(('PATCH',))
+webapp2.WSGIApplication.allowed_methods = new_allowed_methods
+
+
 app = webapp2.WSGIApplication([
-  ('/api/subscribe', Subscribe),
-  ('/api/verify', Verify),
-  ('/api/list', List),
+  webapp2.Route(r'/api/users/<user_id:[\d\w]{50}>/ideas', Ideas)
+  webapp2.Route(r'/api/users/<user_id:[\d\w]{50}>', Users)
 ], debug=True)

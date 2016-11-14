@@ -3,6 +3,7 @@
     functions for sending email.
 """
 
+import base64
 from datetime import datetime
 import jinja2
 import json
@@ -55,28 +56,35 @@ class SendEmails(webapp2.RequestHandler):
 
 class HandleReply(webapp2.RequestHandler):
 
-  def is_valid_auth(auth):
+  def validate_simple_auth(self):
+    auth = self.request.authorization
+    if auth is None:
+      self.abort(401, 'Authorization required.')
     encoded_auth = auth[1]
     username_colon_pass = base64.b64decode(encoded_auth)
     username, password = username_colon_pass.split(':')
-    return (
-        username == secrets.MJ_PARSE_USERNAME and
-        password == secrets.MJ_PARSE_PASSWORD)
+    # Comment
+    if (username != secrets.MJ_PARSE_USERNAME or
+        password != secrets.MJ_PARSE_PASSWORD):
+      self.abort(401, 'Invalid credentials.')
+
 
   def post(self):
-    auth = self.request.authorization
-    if auth is None or not is_valid_auth(auth):
-      self.abort(401, 'Authorization required.')
-    body = json.loads(self.request.body)
+    logging.info('you got mail!')
+    self.validate_simple_auth()
+    try:
+      body = json.loads(self.request.body)
+    except ValueError:
+      self.abort(400, 'Expected JSON email description.')
     text_part = body.get('Text-part')
     logging.info('text_part: ' + text_part)
     email = body.get('Sender')
     logging.info('email: ' + email)
-    date = body.get('date')
+    date = body.get('Date')
     logging.info('date: ' + date)
 
-    account = models.Account.query(models.Account.email == link.email).fetch()
-    idea = models.Idea(parent=account.key(), text=text, date=datetime.now())
+    user = models.User.query(models.User.email == link.email).fetch()
+    idea = models.Idea(parent=user.key(), text=text, date=datetime.now())
     idea.put()
 
 

@@ -30,7 +30,8 @@ const Settings = () => {
 
 class Verify extends React.Component {
   componentWillMount() {
-    this.props.validateCode(this.props.params.code);
+    var params = this.props.params;
+    this.props.verify(params.userId, params.linkCode);
   }
   render() {
     var message;
@@ -56,7 +57,7 @@ const mapStateToProps = (state) => {
 }
 const mapDispatchToProps = (dispatch) => {
   return {
-    validateCode: (code) => { dispatch(startVerify(code)); }
+    verify: (userId, linkCode) => { dispatch(startVerify(userId, linkCode)); }
   };
 }
 
@@ -71,7 +72,7 @@ const App = () => {
       <Route path="/" component={Main}>
         <IndexRoute component={Home} />
         <Route path="settings" component={Settings} />
-        <Route path="verify/:code" component={ActiveVerify} />
+        <Route path="verify/:userId/:linkCode" component={ActiveVerify} />
       </Route>
     </Router>
   );

@@ -10,9 +10,12 @@ handlers:
 - url: /api/.*
   script: server.api.app
 
-- url: /mail/.*
+- url: /mail/send
   script: server.mail.app
   login: admin
+
+- url: /mail/receive
+  script: server.mail.app
 
 - url: /
   static_files: client/build/index.html

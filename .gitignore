@@ -19,5 +19,4 @@ build
 npm-debug.log
 *~
 *.pyc
-
 secrets.py
