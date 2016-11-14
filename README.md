@@ -1,13 +1,9 @@
-To install Python dependencies, ideally we could run:
+Set up:
 
-    pip install -t server/lib -r requirements.txt
+    $ virtualenv env
+    $ source env/bin/activate
+    $ pip install -t server/lib -r requirements.txt
 
-But this doesn't work with Homebrew Python.  So we need to use a venv:
+Test:
 
-    virtualenv env
-    source env/bin/activate
-    ln -s env/lib/python2.7/site-packages lib. # Not sure this is needed?
-    pip install -t server/lib -r requirements.txt
-
-To run:
-
+    $ python runner.py

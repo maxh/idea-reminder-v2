@@ -3,14 +3,12 @@ from google.appengine.ext import ndb
 
 class User(ndb.Model):
   email = ndb.StringProperty(required=True)
-  user_id = ndb.StringProperty(required=True)
-  isVerified = ndb.BooleanProperty(default=False, required=True)
-  isDisabled = ndb.BooleanProperty(default=False, required=True)
+  is_verified = ndb.BooleanProperty(default=False, required=True)
+  is_enabled = ndb.BooleanProperty(default=True, required=True)
 
 
 class Link(ndb.Model):
   link_code = ndb.StringProperty(required=True)
-  user_id = ndb.StringProperty(required=True)
   expiration = ndb.DateTimeProperty(required=True)
 
 

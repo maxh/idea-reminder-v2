@@ -61,37 +61,34 @@ class Users(BaseHandler):
     if models.User.query(models.User.email == email).get():
       self.abort_clean('The email address "%s" is already subscribed.' % email)
 
-    user_id = id_generator()    
-    user = models.User(email=email, user_id=user_id)
+    user = models.User(email=email)
     user.put()
 
     link_code = id_generator()
     expiration = datetime.datetime.now() + datetime.timedelta(days=7)
-    models.Link(user_id=user_id, expiration=expiration, link_code=link_code).put()
-    link = posixpath.join(config.URL, 'verify/%s/%s' % (user_id, link_code))
+    models.Link(parent=user, expiration=expiration, link_code=link_code).put()
+    link = posixpath.join(config.URL, 'verify/%s/%s' % (user.key().urlsafe(), link_code))
 
     mail.send_email_from_template(email, 'welcome', {'verification_link': link})
 
   def patch(self, user_id):
     """Applies the patch in the request body to the user with the id."""
-    user = models.User.query(models.User.user_id == user_id).get()
+    user_key = ndb.Key(urlsafe=user_id)
+    user = key.get()
     if user is None:
       self.abort_clean('Invalid user ID.')
 
     link_code = self.request.headers.get('X-IdeaReminder-LinkCode')
-    link = models.Link.query(models.Link.link_code == link_code).get()
+    user_links = models.Link.query(ancestor=user_key)
+    link = user_links.filter(models.Link.link_code == link_code).get()
     if link is None or link.expiration < datetime.datetime.now():
       self.abort_clean('This link has expired.', user.email)
-
-    link_user = models.User.query(models.User.user_id == link.user_id).get()
-    if link_user != user:
-      self.abort_clean('This link is invalid.')
 
     body = json.loads(self.request.body)
 
     if 'isVerified' in body:
       if body.get('isVerified'):
-        if user.isVerified:
+        if user.is_verified:
           self.abort_clean(
               'The subscription for "%s" has already been verified.' % link.email)
         else:
@@ -121,6 +118,7 @@ webapp2.WSGIApplication.allowed_methods = new_allowed_methods
 
 
 app = webapp2.WSGIApplication([
-  webapp2.Route(r'/api/users/<user_id:[\d\w]{50}>/ideas', Ideas)
-  webapp2.Route(r'/api/users/<user_id:[\d\w]{50}>', Users)
+  webapp2.Route(r'/api/users/<user_id:[\d\w]{50}>/ideas', Ideas),
+  webapp2.Route(r'/api/users/<user_id:[\d\w]{50}>', Users),
+  webapp2.Route(r'/api/users', Users),
 ], debug=True)

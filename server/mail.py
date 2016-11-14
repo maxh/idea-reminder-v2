@@ -49,8 +49,9 @@ class SendEmails(webapp2.RequestHandler):
     # Load the template in advance to avoid getting the template once for
     # each user.
     template = TEMPLATES.get_template('reminder.html')
-    users = models.User.query(models.User.unsubscribed == False).fetch()
-    for user in users:
+    enabled = models.User.query(models.User.is_enabled == True)
+    active = enabled.filter(models.User.is_verified == True)
+    for user in active.fetch():
       send_email_from_template(user.email, user.file_id, template)
 
 
@@ -70,21 +71,22 @@ class HandleReply(webapp2.RequestHandler):
 
 
   def post(self):
-    logging.info('you got mail!')
     self.validate_simple_auth()
+
     try:
       body = json.loads(self.request.body)
     except ValueError:
       self.abort(400, 'Expected JSON email description.')
-    text_part = body.get('Text-part')
-    logging.info('text_part: ' + text_part)
-    email = body.get('Sender')
-    logging.info('email: ' + email)
-    date = body.get('Date')
-    logging.info('date: ' + date)
 
-    user = models.User.query(models.User.email == link.email).fetch()
-    idea = models.Idea(parent=user.key(), text=text, date=datetime.now())
+    email = body.get('Sender')
+    user = models.User.query(models.User.email == email).get()
+    if user is None or not user.is_verified:
+      self.abort(400, 'Unrecognized email address: %s' % email)
+
+    full_email_text = body.get('Text-part')
+    idea_text = extract_latest_message(full_email_text)
+
+    idea = models.Idea(parent=user.key, text=idea_text, date=datetime.now())
     idea.put()
 
 
@@ -101,12 +103,18 @@ app = webapp2.WSGIApplication(routes, debug=config.DEBUG)
 ##############################
 
 
+def extract_latest_message(full_email_text):
+  # re.DOTALL matches new lines; we strip everything after the old message.
+  old_messages_regexp = re.compile('(\n+On .*wrote.*:.*)', re.DOTALL)
+  latest_message = old_messages_regexp.sub(r'', full_email_text)
+  return latest_message.rstrip()
+
+
 def send_email_from_template(user_email, template, params):
   # "template" can be a string or an actual Jinja template.
   if isinstance(template, basestring):
     template = TEMPLATES.get_template(template + '.html')
   html_body = template.render(format='html', **params)
-  print
   body = template.render(**params)
   send_email(user_email, template.module.subject, body, html_body)
 
@@ -124,4 +132,3 @@ def send_email(address, subject, text_part, html_part):
   }
   result = mailjet.send.create(data=data)
   logging.info(result.json())
-  logging.info('sent email')
