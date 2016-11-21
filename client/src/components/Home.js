@@ -1,8 +1,7 @@
 import React from 'react';
 import { HelpBlock, FormGroup, Button, Form, Jumbotron, FormControl } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import './Home.css';
-import { editEmail, startSubscribe, SubscribeStatus } from '../../actions/index.js';
+import { editEmail, startSubscribe } from '../actions/index';
 
 
 class SubscribeForm extends React.Component {
@@ -13,7 +12,7 @@ class SubscribeForm extends React.Component {
   }
 
   render() {
-    if (this.props.status === SubscribeStatus.SUCCESS) {
+    if (this.props.isDone) {
       return (
         <div className="success">
           <span className="glyphicon glyphicon-ok"></span>
@@ -24,16 +23,16 @@ class SubscribeForm extends React.Component {
       return (
         <div>
           <Form inline>
-            <FormGroup validationState={this.props.validationState}>
+            <FormGroup validationState={this.props.errorMessage ? 'error' : null}>
               <FormControl
                 type="text"
                 placeholder="Your email"
-                disabled={this.props.disabled}
+                disabled={this.props.isFetching}
                 onChange={this.handleChange} />
               <Button
                 type="submit"
                 className="subscribe"
-                disabled={this.props.disabled}
+                disabled={this.props.isFetching}
                 onClick={this.handleClick}>
                 Subscribe
               </Button>
@@ -56,14 +55,7 @@ class SubscribeForm extends React.Component {
 }
 
 const mapStateToProps = (state) => {
-  const status = state.subscribe.status;
-	return {
-		status: status,
-    errorMessage: state.subscribe.errorMessage,
-    email: state.subscribe.email,
-    disabled: status === SubscribeStatus.LOAD,
-    validationState: status === SubscribeStatus.FAILURE ? 'error' : null
-	};
+	return state.subscribe;
 }
 const mapDispatchToProps = (dispatch) => {
 	return {
@@ -100,7 +92,7 @@ const Home = () => {
 					</div>
 					<div>
 					  <h3>3</h3>
-					  Your replies will be stored in a Google Spreadsheet visible only to you.
+					  Your replies will be stored for later and visible only to you.
 					 </div>
 		    </div>
 	    </div>

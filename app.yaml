@@ -10,22 +10,27 @@ handlers:
 - url: /api/.*
   script: server.api.app
 
-- url: /mail/send
+- url: /mail/send-reminders
   script: server.mail.app
   login: admin
 
 - url: /mail/receive
   script: server.mail.app
 
-- url: /
-  static_files: client/build/index.html
-  upload: client/build/index\.html
+- url: /favicon\.ico
+  static_files: client/build/favicon.ico
+  upload: client/build/favicon\.ico
 
-- url: /
-  static_dir: client/build
+- url: /asset-manifest\.json
+  static_files: client/build/asset-manifest.json
+  upload: client/build/asset-manifest\.json
+
+- url: /static
+  static_dir: client/build/static
 
 - url: /.*
-  script: not_found.app
+  static_files: client/build/index.html
+  upload: client/build/index\.html
 
 skip_files:
 - ^(.*/)?#.*#$

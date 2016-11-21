@@ -2,14 +2,11 @@ import datetime
 import json
 import logging
 import posixpath
-import random
-import string
 import webapp2
 
 from validate_email import validate_email
 
-from google.appengine.ext import ndb
-
+import auth
 import config
 import mail
 import models
@@ -27,6 +24,7 @@ class BaseHandler(webapp2.RequestHandler):
   def handle_exception(self, exception, debug):
     logging.exception(exception)
 
+    result = None
     try:
       if isinstance(exception, webapp2.HTTPException):
         self.response.set_status(exception.code)
@@ -35,13 +33,15 @@ class BaseHandler(webapp2.RequestHandler):
           if exception.email is not None:
             # Include the email address in case it's useful.
             result['email'] = exception.email
-        self.response.headers['Content-Type'] = 'application/json'
-        self.response.write(json.dumps(result))
-        return
     except:
       pass
 
-    self.response.set_status(500)
+    if result is None:
+      result = {'message': 'Unknown server error.'}
+      self.response.set_status(500)
+
+    self.response.write(json.dumps(result))
+    self.response.headers['Content-Type'] = 'application/json'
 
   def abort_clean(self, message, email=None):
     raise CleanException(message, email)
@@ -61,32 +61,25 @@ class Users(BaseHandler):
     if not validate_email(email):
       self.abort_clean('The email address "%s" is invalid.' % email)
 
+    email = email.lower()
+
     if models.User.query(models.User.email == email).get():
       self.abort_clean('The email address "%s" is already subscribed.' % email)
 
     user = models.User(email=email)
     user.put()
 
-    link_code = id_generator()
-    expiration = datetime.datetime.now() + datetime.timedelta(days=7)
-    models.Link(parent=user.key, expiration=expiration, link_code=link_code).put()
-    link = posixpath.join(config.URL, 'verify/%s/%s' % (user.key.urlsafe(), link_code))
+    mail.send_email_from_template(email, 'welcome', {
+      'verification_link': auth.generate_link(user, 'verify')
+    })
 
-    mail.send_email_from_template(email, 'welcome', {'verification_link': link})
+    self.response.write(json.dumps(user.to_dict()))
+    self.response.headers['Content-Type'] = 'application/json'
 
-  def patch(self, user_id):
+
+  @auth.request_validator
+  def patch(self, user):
     """Applies the patch in the request body to the user with the id."""
-    user_key = ndb.Key(urlsafe=user_id)
-    user = user_key.get()
-    if user is None:
-      self.abort_clean('Invalid user ID.')
-
-    link_code = self.request.headers.get('X-IdeaReminder-LinkCode')
-    user_links = models.Link.query(ancestor=user_key)
-    link = user_links.filter(models.Link.link_code == link_code).get()
-    if link is None or link.expiration < datetime.datetime.now():
-      self.abort_clean('This link has expired.', user.email)
-
     body = json.loads(self.request.body)
 
     if 'isVerified' in body:
@@ -96,6 +89,8 @@ class Users(BaseHandler):
               'The subscription for "%s" has already been verified.' % user.email)
         else:
           user.is_verified = True
+    if 'isEnabled' in body:
+      user.is_enabled = body.get('isEnabled')
 
     user.put()
 
@@ -106,12 +101,23 @@ class Users(BaseHandler):
 class Ideas(BaseHandler):
   """RESTful endpoint for listing ideas."""
 
-  def get(self):
-    pass
+  # @auth.request_validator
+  # def get(self, user):
+  #   ideas = models.Idea.query(ancestor=user.key).fetch()
+  #   idea_dicts = [idea.to_dict() for idea in ideas]
+  #   self.response.write(json.dumps({'ideas': idea_dicts}, default=serializer))
+  #   self.response.headers['Content-Type'] = 'application/json'
 
+  def get(self, user_id):
+    self.response.write('{"ideas": [{"date": "2016-11-16T17:02:10.340130", "text": "lovely"}, {"date": "2016-11-16T17:02:09.356260", "text": "and again"}, {"date": "2016-11-16T17:02:06.363380", "text": "this time."}, {"date": "2016-11-16T17:02:03.339190", "text": "Testing another time."}, {"date": "2016-11-16T16:59:59.232290", "text": "This is an idea!"}, {"date": "2016-11-16T17:02:08.313220", "text": "ok"}, {"date": "2016-11-16T17:02:04.363750", "text": "Making progress!"}, {"date": "2016-11-16T16:45:58.841040", "text": "Now you should work!"}, {"date": "2016-11-16T17:02:07.381850", "text": "yea!"}, {"date": "2016-11-16T17:02:03.435110", "text": "Testing another time again."}, {"date": "2016-11-16T17:02:01.633100", "text": "Testing again!"}, {"date": "2016-11-16T17:02:11.349070", "text": "yep"}, {"date": "2016-11-16T17:02:05.315310", "text": "Test."}]}')
+    self.response.headers['Content-Type'] = 'application/json'
+    # TODO(maxh): pagination
 
-def id_generator(size=50, chars=string.ascii_lowercase + string.digits):
-  return ''.join(random.choice(chars) for _ in range(size))
+  def post(self):
+    me = models.User.query(models.User.email == 'maxheinritz@gmail.com').get()
+    ideas = models.Idea.query(ancestor=me).get()
+    idea = models.Idea(parent=me.key, text='this is an idea', date=datetime.now())
+    idea.put()
 
 
 # Add PATCH support to webapp2.
@@ -124,4 +130,12 @@ app = webapp2.WSGIApplication([
   webapp2.Route(r'/api/users/<user_id:[^/]*>/ideas', Ideas),
   webapp2.Route(r'/api/users/<user_id:[^/]*>', Users),
   webapp2.Route(r'/api/users', Users),
-], debug=True)
+], debug=config.DEBUG)
+
+
+def serializer(obj):
+  """JSON serializer for objects not serializable by default json code"""
+  if isinstance(obj, datetime.datetime):
+    serial = obj.isoformat()
+    return serial
+  raise TypeError ("Type not serializable")

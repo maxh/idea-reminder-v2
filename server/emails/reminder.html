@@ -1,15 +1,15 @@
-{% set subject = 'What\'s a new idea you've had today?' %}
+{% set subject = 'What\'s a new idea you\'ve had today?' %}
 {% if format == 'html' %}
 <p>Reply to this email with a few words or sentences.</p>
 <p>
-  <a href="{{ responses_link }}">View your previous replies</a> |
+  <a href="{{ list_link }}">View your previous replies</a> |
   <a href="{{ unsubscribe_link }}">Unsubscribe</a> |
-  <a href="{{ github_url }}">Submit feedback</a>
+  <a href="{{ github_link }}">Submit feedback</a>
 </p>
 {% else %}
 Reply to this email with a few words or sentences.
 
-View your previous replies: {{ responses_link }}
+View your previous replies: {{ list_link }}
 Unsubscribe: {{ unsubscribe_link }}
-Submit feedback: {{ github_url }}
+Submit feedback: {{ github_link }}
 {% endif %}

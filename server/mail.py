@@ -12,23 +12,20 @@ import os
 import re
 import webapp2
 
-# App Engine imports.
-from google.appengine.api import mail
-from google.appengine.ext import ndb
-
 
 # Third-party imports.
 import mailjet_rest
 import requests_toolbelt.adapters.appengine
 
 # App imports.
+import auth
 import config
 import models
 import secrets
 
 
 # Use the App Engine requests adapter to allow the requests library to be
-# used on App Engine.
+# used on App Engine. Mailjet needs requests.
 requests_toolbelt.adapters.appengine.monkeypatch()
 
 
@@ -40,10 +37,11 @@ TEMPLATES = jinja2.Environment(
 
 TEMPLATES.globals = {
   'app_name': config.APP_NAME,
-  'github_url': config.GITHUB_URL
+  'github_link': config.GITHUB_LINK
 }
 
-class SendEmails(webapp2.RequestHandler):
+
+class SendReminders(webapp2.RequestHandler):
 
   def get(self):
     # Load the template in advance to avoid getting the template once for
@@ -51,24 +49,28 @@ class SendEmails(webapp2.RequestHandler):
     template = TEMPLATES.get_template('reminder.html')
     enabled = models.User.query(models.User.is_enabled == True)
     active = enabled.filter(models.User.is_verified == True)
+
     for user in active.fetch():
-      send_email_from_template(user.email, user.file_id, template)
+      params = {
+        'list_link': auth.generate_link(user, 'list'),
+        'unsubscribe_link': auth.generate_link(user, 'unsubscribe'),
+      }
+      send_email_from_template(user.email, template, params)
 
 
 class HandleReply(webapp2.RequestHandler):
 
   def validate_simple_auth(self):
+    """Validates simple HTTP auth from Mailjet."""
     auth = self.request.authorization
     if auth is None:
       self.abort(401, 'Authorization required.')
     encoded_auth = auth[1]
     username_colon_pass = base64.b64decode(encoded_auth)
     username, password = username_colon_pass.split(':')
-    # Comment
     if (username != secrets.MJ_PARSE_USERNAME or
         password != secrets.MJ_PARSE_PASSWORD):
       self.abort(401, 'Invalid credentials.')
-
 
   def post(self):
     self.validate_simple_auth()
@@ -90,12 +92,11 @@ class HandleReply(webapp2.RequestHandler):
     idea.put()
 
 
-routes = [
-    ('/mail/send', SendEmails),
-    ('/mail/receive', HandleReply)
-]
 
-app = webapp2.WSGIApplication(routes, debug=config.DEBUG)
+app = webapp2.WSGIApplication([
+    ('/mail/send-reminders', SendReminders),
+    ('/mail/receive', HandleReply),
+], debug=config.DEBUG)
 
 
 ##############################

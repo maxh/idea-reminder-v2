@@ -1,0 +1,5 @@
+cron:
+- description: daily reminder job
+  url: /mail/send
+  schedule: every day 00:01
+  timezone: US/Pacific
