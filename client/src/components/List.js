@@ -11,7 +11,7 @@ class StaticList extends React.Component {
 
   render() {
     var message;
-    if (this.props.isFetching) {
+    if (this.props.isLoading) {
       message = 'Listing...';
     } else if (this.props.ideas) {
       message = this.renderIdeas(this.props.ideas);
@@ -44,7 +44,7 @@ class StaticList extends React.Component {
 }
 
 const mapStateToProps = (state) => {
-  return state.list;
+  return state.ideas;
 }
 const mapDispatchToProps = (dispatch) => {
   return {

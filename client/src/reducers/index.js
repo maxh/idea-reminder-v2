@@ -1,68 +1,76 @@
 import { combineReducers } from 'redux'
 import * as ActionTypes from '../actions'
 
+/**
 
-function subscribe(state = {isFetching: false}, action) {
+State tree design:
+
+  {
+    ideas: {
+      isLoading: boolean,
+      errorMessage: string,
+      ideas: [...]
+    },
+    user: {
+      isLoading: boolean,
+      errorMessage: string,
+      subscribeEmail: string,
+      user: {...}
+    }
+  }
+
+ */
+
+
+function user(state = {}, action) {
   switch (action.type) {
-    case ActionTypes.SUBSCRIBE_EDIT:
+    case ActionTypes.USER_REQUEST:
       return {
         ...state,
-        email: action.email,
-        errorMessage: null
+        isLoading: true,
+        errorMessage: undefined
       };
-    case ActionTypes.SUBSCRIBE_REQUEST:
+    case ActionTypes.USER_SUCCESS:
       return {
         ...state,
-        isFetching: true
+        isLoading: false,
+        user: action.response
       };
-    case ActionTypes.SUBSCRIBE_FAILURE:
+    case ActionTypes.USER_FAILURE:
       return {
         ...state,
-        isFetching: false,
+        isLoading: false,
         errorMessage: action.errorMessage
       };
-    case ActionTypes.SUBSCRIBE_SUCCESS:
+    case ActionTypes.SUBSCRIBE_EMAIL_EDIT:
       return {
         ...state,
-        isFetching: false,
-        isDone: true
+        subscribeEmail: action.subscribeEmail,
+        errorMessage: undefined
       };
     default:
       return state;
   }
 }
 
-function verify(state = {isFetching: true}, action) {
-  switch (action.type) {
-    case ActionTypes.VERIFY_SUCCESS:
-      return {
-        ...state,
-        isFetching: false,
-        verifiedEmail: action.response.email
-      };
-    case ActionTypes.VERIFY_FAILURE:
-      return {
-        ...state,
-        isFetching: false,
-        errorMessage: action.errorMessage
-      };
-    default:
-      return state;
-  }
-}
 
-function list(state = {isFetching: true}, action) {
+function ideas(state = {}, action) {
   switch (action.type) {
-    case ActionTypes.LIST_SUCCESS:
+    case ActionTypes.IDEAS_REQUEST:
       return {
         ...state,
-        isFetching: false,
+        isLoading: true
+      };
+    case ActionTypes.IDEAS_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
         ideas: action.response.ideas
       };
-    case ActionTypes.LIST_FAILURE:
+    case ActionTypes.IDEAS_FAILURE:
       return {
         ...state,
-        isFetching: false,
+        isLoading: false,
         errorMessage: action.errorMessage
       };
     default:
@@ -70,25 +78,6 @@ function list(state = {isFetching: true}, action) {
   }
 }
 
-function unsubscribe(state = {}, action) {
-  switch (action.type) {
-    case ActionTypes.UNSUBSCRIBE_SUCCESS:
-      return {
-        ...state,
-        isFetching: false,
-        isDone: true
-      };
-    case ActionTypes.UNSUBSCRIBE_FAILURE:
-      return {
-        ...state,
-        isFetching: false,
-        errorMessage: action.errorMessage
-      };
-    default:
-      return state;
-  }
-}
-
-const rootReducer = combineReducers({subscribe, verify, list, unsubscribe});
+const rootReducer = combineReducers({ideas, user});
 
 export default rootReducer;

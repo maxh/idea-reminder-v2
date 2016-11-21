@@ -32,7 +32,7 @@ const Donate = () => {
 const NotFound = () => {
   return (
     <div>
-      Oops! We couldn't find what you're looking for.
+      Oops! We couldn't find that page.
     </div>
   );
 }

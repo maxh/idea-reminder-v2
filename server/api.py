@@ -50,6 +50,10 @@ class BaseHandler(webapp2.RequestHandler):
 class Users(BaseHandler):
   """RESTful endpoints for creating and updating users."""
 
+  def respond_with_user(self, user):
+    self.response.write(json.dumps(user.to_dict(), default=serializer))
+    self.response.headers['Content-Type'] = 'application/json'
+
   def post(self):
     """Creates a user."""
     body = json.loads(self.request.body)
@@ -66,18 +70,16 @@ class Users(BaseHandler):
     if models.User.query(models.User.email == email).get():
       self.abort_clean('The email address "%s" is already subscribed.' % email)
 
-    user = models.User(email=email)
+    user = models.User(email=email, sign_up_date=datetime.datetime.now())
     user.put()
 
     mail.send_email_from_template(email, 'welcome', {
       'verification_link': auth.generate_link(user, 'verify')
     })
 
-    self.response.write(json.dumps(user.to_dict()))
-    self.response.headers['Content-Type'] = 'application/json'
+    self.respond_with_user(user)
 
-
-  @auth.request_validator
+  @auth.require_credentials
   def patch(self, user):
     """Applies the patch in the request body to the user with the id."""
     body = json.loads(self.request.body)
@@ -94,14 +96,13 @@ class Users(BaseHandler):
 
     user.put()
 
-    self.response.write(json.dumps(user.to_dict()))
-    self.response.headers['Content-Type'] = 'application/json'
+    self.respond_with_user(user)
 
 
 class Ideas(BaseHandler):
   """RESTful endpoint for listing ideas."""
 
-  # @auth.request_validator
+  # @auth.require_credentials
   # def get(self, user):
   #   ideas = models.Idea.query(ancestor=user.key).fetch()
   #   idea_dicts = [idea.to_dict() for idea in ideas]

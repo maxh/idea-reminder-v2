@@ -1,7 +1,7 @@
 import React from 'react';
 import { HelpBlock, FormGroup, Button, Form, Jumbotron, FormControl } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import { editEmail, startSubscribe } from '../actions/index';
+import { editSubscribeEmail, startSubscribe } from '../actions/index';
 
 
 class SubscribeForm extends React.Component {
@@ -12,11 +12,19 @@ class SubscribeForm extends React.Component {
   }
 
   render() {
-    if (this.props.isDone) {
+    if (this.props.subscribeEmail && this.props.user) {
+      // Just signed up.
       return (
         <div className="success">
           <span className="glyphicon glyphicon-ok"></span>
           Welcome! Please click the verification link in the email we just sent.
+        </div>
+      );
+    } else if (this.props.user) {
+      // Return user.
+      return (
+        <div className="success">
+          Welcome back, {this.props.user.email}.
         </div>
       );
     } else {
@@ -27,12 +35,12 @@ class SubscribeForm extends React.Component {
               <FormControl
                 type="text"
                 placeholder="Your email"
-                disabled={this.props.isFetching}
+                disabled={this.props.isLoading}
                 onChange={this.handleChange} />
               <Button
                 type="submit"
                 className="subscribe"
-                disabled={this.props.isFetching}
+                disabled={this.props.isLoading}
                 onClick={this.handleClick}>
                 Subscribe
               </Button>
@@ -50,16 +58,16 @@ class SubscribeForm extends React.Component {
   }
 
   handleClick() {
-    this.props.onClick(this.props.email);
+    this.props.onClick(this.props.subscribeEmail);
   }
 }
 
 const mapStateToProps = (state) => {
-	return state.subscribe;
+	return state.user;
 }
 const mapDispatchToProps = (dispatch) => {
 	return {
-    onChange: (email) => { dispatch(editEmail(email)); },
+    onChange: (email) => { dispatch(editSubscribeEmail(email)); },
 		onClick: (email) => { dispatch(startSubscribe(email)); }
 	};
 }

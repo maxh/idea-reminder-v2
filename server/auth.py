@@ -23,7 +23,7 @@ def generate_link_code(size=50, chars=string.ascii_lowercase + string.digits):
   return ''.join(random.choice(chars) for _ in range(size))
 
 
-def request_validator(func):
+def require_credentials(func):
   """A decorator for request validation based on user ID and link code."""
 
   def wrapper(self, user_id):

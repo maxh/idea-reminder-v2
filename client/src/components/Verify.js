@@ -10,10 +10,10 @@ class StaticVerify extends React.Component {
   }
   render() {
     var message;
-    if (this.props.isFetching) {
+    if (this.props.isLoading) {
       message = 'Verifying...';
-    } else if (this.props.verifiedEmail) {
-      message = `The subscription for "${this.props.verifiedEmail}" has been verified. Thanks!`;
+    } else if (this.props.user && this.props.user.email) {
+      message = `The subscription for "${this.props.user.email}" has been verified. Thanks!`;
     } else {
       message = this.props.errorMessage || 'Unable to verify email address.';
     }
@@ -24,11 +24,7 @@ class StaticVerify extends React.Component {
 }
 
 const mapStateToProps = (state) => {
-  return {
-    isFetching: state.verify.isFetching,
-    verifiedEmail: state.verify.verifiedEmail,
-    errorMessage: state.verify.errorMessage
-  };
+  return state.user;
 }
 const mapDispatchToProps = (dispatch) => {
   return {
