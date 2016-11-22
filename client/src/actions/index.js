@@ -81,15 +81,12 @@ export const IDEAS_REQUEST = 'IDEAS_REQUEST'
 export const IDEAS_FAILURE = 'IDEAS_FAILURE'
 export const IDEAS_SUCCESS = 'IDEAS_SUCCESS'
 
-export const startList = (userId, linkCode) => {
-  return {
-    [CALL_API]: {
+export const startList = () => {
+  return (dispatch, getState) => {
+    const userId = getState().user.userId;
+    dispatch({[CALL_API]: {
       endpoint: `/users/${userId}/ideas`,
       types: [IDEAS_REQUEST, IDEAS_SUCCESS, IDEAS_FAILURE],
-      options: {
-        method: 'GET',
-        linkCode: linkCode
-      }
-    }
+    }});
   };
 }

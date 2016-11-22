@@ -63,7 +63,7 @@ class SubscribeForm extends React.Component {
 }
 
 const mapStateToProps = (state) => {
-	const {user, error} = state;
+  const {user, error} = state;
   return {...user, error};
 }
 const mapDispatchToProps = (dispatch) => {

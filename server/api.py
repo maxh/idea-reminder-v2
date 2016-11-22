@@ -2,6 +2,7 @@
 
 import datetime
 import json
+import webapp2
 
 from validate_email import validate_email
 
@@ -71,17 +72,16 @@ class Users(api_base.BaseHandler):
 class Ideas(api_base.BaseHandler):
   """RESTful endpoint for listing ideas."""
 
-  # @auth.require_credentials
-  # def get(self, user):
-  #   ideas = models.Idea.query(ancestor=user.key).fetch()
-  #   idea_dicts = [idea.to_dict() for idea in ideas]
-  #   self.response.write(json.dumps({'ideas': idea_dicts}, default=api_base.serializer))
-  #   self.response.headers['Content-Type'] = 'application/json'
-
-  def get(self, user_id):
-    self.response.write('{"ideas": [{"date": "2016-11-16T17:02:10.340130", "text": "lovely"}, {"date": "2016-11-16T17:02:09.356260", "text": "and again"}, {"date": "2016-11-16T17:02:06.363380", "text": "this time."}, {"date": "2016-11-16T17:02:03.339190", "text": "Testing another time."}, {"date": "2016-11-16T16:59:59.232290", "text": "This is an idea!"}, {"date": "2016-11-16T17:02:08.313220", "text": "ok"}, {"date": "2016-11-16T17:02:04.363750", "text": "Making progress!"}, {"date": "2016-11-16T16:45:58.841040", "text": "Now you should work!"}, {"date": "2016-11-16T17:02:07.381850", "text": "yea!"}, {"date": "2016-11-16T17:02:03.435110", "text": "Testing another time again."}, {"date": "2016-11-16T17:02:01.633100", "text": "Testing again!"}, {"date": "2016-11-16T17:02:11.349070", "text": "yep"}, {"date": "2016-11-16T17:02:05.315310", "text": "Test."}]}')
+  @auth.require_credentials
+  def get(self, user):
+    ideas = models.Idea.query(ancestor=user.key).fetch()
+    idea_dicts = [idea.to_dict() for idea in ideas]
+    self.response.write(json.dumps({'ideas': idea_dicts}, default=api_base.serializer))
     self.response.headers['Content-Type'] = 'application/json'
-    # TODO(maxh): pagination
+
+  # def get(self, user_id):
+  #   self.response.write('{"ideas": [{"date": "2016-11-16T17:02:10.340130", "text": "lovely"}, {"date": "2016-11-16T17:02:09.356260", "text": "and again"}, {"date": "2016-11-16T17:02:06.363380", "text": "this time."}, {"date": "2016-11-16T17:02:03.339190", "text": "Testing another time."}, {"date": "2016-11-16T16:59:59.232290", "text": "This is an idea!"}, {"date": "2016-11-16T17:02:08.313220", "text": "ok"}, {"date": "2016-11-16T17:02:04.363750", "text": "Making progress!"}, {"date": "2016-11-16T16:45:58.841040", "text": "Now you should work!"}, {"date": "2016-11-16T17:02:07.381850", "text": "yea!"}, {"date": "2016-11-16T17:02:03.435110", "text": "Testing another time again."}, {"date": "2016-11-16T17:02:01.633100", "text": "Testing again!"}, {"date": "2016-11-16T17:02:11.349070", "text": "yep"}, {"date": "2016-11-16T17:02:05.315310", "text": "Test."}]}')
+  #   self.response.headers['Content-Type'] = 'application/json'
 
   def post(self):
     me = models.User.query(models.User.email == 'maxheinritz@gmail.com').get()
