@@ -5,17 +5,16 @@ import { startVerify } from '../actions/index.js';
 
 class StaticVerify extends React.Component {
   componentWillMount() {
-    var params = this.props.params;
-    this.props.verify(params.userId, params.linkCode);
+    this.props.startVerify();
   }
   render() {
     var message;
     if (this.props.isLoading) {
       message = 'Verifying...';
+    } else if (this.props.error) {
+      message = this.props.error || 'Unable to verify email address.';
     } else if (this.props.user && this.props.user.email) {
       message = `The subscription for "${this.props.user.email}" has been verified. Thanks!`;
-    } else {
-      message = this.props.errorMessage || 'Unable to verify email address.';
     }
     return (
       <div style={{'textAlign': 'center'}}>{message}</div>
@@ -24,15 +23,11 @@ class StaticVerify extends React.Component {
 }
 
 const mapStateToProps = (state) => {
-  return state.user;
-}
-const mapDispatchToProps = (dispatch) => {
-  return {
-    verify: (userId, linkCode) => { dispatch(startVerify(userId, linkCode)); }
-  };
+  const {user, error} = state;
+  return {...user, error};
 }
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  {startVerify: startVerify}
 )(StaticVerify);

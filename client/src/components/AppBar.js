@@ -42,9 +42,5 @@ class AppBar extends React.Component {
 
 // For context on {pure: false}, see:
 // github.com/react-bootstrap/react-router-bootstrap/issues/152
-export default connect((state) => {
-  return {
-    user: state.user
-  }
-}, null, null, {pure: false})(AppBar);
+export default connect(null, null, null, {pure: false})(AppBar);
 

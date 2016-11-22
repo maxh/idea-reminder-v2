@@ -13,7 +13,7 @@ if (os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine') or
   URL = 'idea-reminder-two.appspot.com'
 else:
   PROD = False
-  URL = 'localhost:3000'
+  URL = 'idea-reminder-two.appspot.com'
 
 
 DEBUG = not PROD

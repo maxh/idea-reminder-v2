@@ -3,7 +3,7 @@ from google.appengine.ext import ndb
 
 class User(ndb.Model):
   email = ndb.StringProperty(required=True)
-  sign_up_date = ndb.DateTimeProperty(required=True)
+  sign_up_date = ndb.DateTimeProperty(auto_now_add=True)
   last_response_date = ndb.DateTimeProperty()
   is_verified = ndb.BooleanProperty(required=True, default=False)
   is_enabled = ndb.BooleanProperty(required=True, default=True)

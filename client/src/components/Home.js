@@ -1,7 +1,7 @@
 import React from 'react';
 import { HelpBlock, FormGroup, Button, Form, Jumbotron, FormControl } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import { editSubscribeEmail, startSubscribe } from '../actions/index';
+import { clearError, editSubscribeEmail, startSubscribe } from '../actions/index';
 
 
 class SubscribeForm extends React.Component {
@@ -31,7 +31,7 @@ class SubscribeForm extends React.Component {
       return (
         <div>
           <Form inline>
-            <FormGroup validationState={this.props.errorMessage ? 'error' : null}>
+            <FormGroup validationState={this.props.error ? 'error' : null}>
               <FormControl
                 type="text"
                 placeholder="Your email"
@@ -44,7 +44,7 @@ class SubscribeForm extends React.Component {
                 onClick={this.handleClick}>
                 Subscribe
               </Button>
-              <HelpBlock>{this.props.errorMessage}</HelpBlock>
+              <HelpBlock>{this.props.error}</HelpBlock>
             </FormGroup>
           </Form>
         </div>
@@ -63,12 +63,18 @@ class SubscribeForm extends React.Component {
 }
 
 const mapStateToProps = (state) => {
-	return state.user;
+	const {user, error} = state;
+  return {...user, error};
 }
 const mapDispatchToProps = (dispatch) => {
 	return {
-    onChange: (email) => { dispatch(editSubscribeEmail(email)); },
-		onClick: (email) => { dispatch(startSubscribe(email)); }
+    onChange: (email) => {
+      dispatch(editSubscribeEmail(email));
+      dispatch(clearError());
+    },
+		onClick: (email) => {
+      dispatch(startSubscribe(email));
+    }
 	};
 }
 

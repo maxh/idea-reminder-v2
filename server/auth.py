@@ -2,6 +2,7 @@ import datetime
 import posixpath
 import random
 import string
+import urllib
 
 from google.appengine.ext import ndb
 
@@ -13,8 +14,12 @@ def generate_link(user, path):
   link_code = generate_link_code()
   expiration = datetime.datetime.now() + datetime.timedelta(days=7)
   models.Link(parent=user.key, expiration=expiration, link_code=link_code).put()
-  full_path = '%s/%s/%s' % (path, user.key.urlsafe(), link_code)
-  return posixpath.join(config.URL, full_path)
+  query_string = urllib.urlencode({
+    'linkCode': link_code,
+    'userId': user.key.urlsafe()
+  })
+  full_path = posixpath.join(config.URL, path)
+  return 'https://%s?%s' % (full_path, query_string)
 
 
 def generate_link_code(size=50, chars=string.ascii_lowercase + string.digits):

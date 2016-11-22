@@ -5,12 +5,11 @@ import { startUnsubscribe } from '../actions/index.js';
 
 class StaticUnsubscribe extends React.Component {
   componentWillMount() {
-    var params = this.props.params;
-    this.props.unsubscribe(params.userId, params.linkCode);
+    this.props.startUnsubscribe();
   }
 
   render() {
-    if (this.props.isFetching) {
+    if (this.props.isLoading) {
       return <div>Unsubscribing...</div>;
     } else if (this.props.errorMessage) {
       return <div>{this.props.errorMessage || 'Unable to list email address.'}</div>
@@ -18,7 +17,7 @@ class StaticUnsubscribe extends React.Component {
       return (
         <div>
           <div>
-            {'Successfully unsubscribed ' + this.props.email}
+            {'Successfully unsubscribed ' + this.props.user.email}
           </div>
           <div>
             You can delete your account on the settings page.
@@ -30,17 +29,10 @@ class StaticUnsubscribe extends React.Component {
 }
 
 const mapStateToProps = (state) => {
-  return state.unsubscribe;
-}
-const mapDispatchToProps = (dispatch) => {
-  return {
-    unsubscribe: (userId, linkCode) => {
-      dispatch(startUnsubscribe(userId, linkCode));
-    }
-  };
+  return state.user;
 }
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  {startUnsubscribe: startUnsubscribe}
 )(StaticUnsubscribe);

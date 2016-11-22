@@ -1,57 +1,22 @@
+"""Rest API for users and ideas."""
+
 import datetime
 import json
-import logging
-import posixpath
-import webapp2
 
 from validate_email import validate_email
 
+import api_base
 import auth
 import config
 import mail
 import models
 
 
-class CleanException(webapp2.HTTPException):
-  def __init__(self, message, email):
-    self.code = 400
-    self.message = message
-    self.email = email
-
-
-class BaseHandler(webapp2.RequestHandler):
-
-  def handle_exception(self, exception, debug):
-    logging.exception(exception)
-
-    result = None
-    try:
-      if isinstance(exception, webapp2.HTTPException):
-        self.response.set_status(exception.code)
-        result = {'message': exception.message}
-        if isinstance(exception, CleanException):
-          if exception.email is not None:
-            # Include the email address in case it's useful.
-            result['email'] = exception.email
-    except:
-      pass
-
-    if result is None:
-      result = {'message': 'Unknown server error.'}
-      self.response.set_status(500)
-
-    self.response.write(json.dumps(result))
-    self.response.headers['Content-Type'] = 'application/json'
-
-  def abort_clean(self, message, email=None):
-    raise CleanException(message, email)
-
-
-class Users(BaseHandler):
+class Users(api_base.BaseHandler):
   """RESTful endpoints for creating and updating users."""
 
   def respond_with_user(self, user):
-    self.response.write(json.dumps(user.to_dict(), default=serializer))
+    self.response.write(json.dumps(user.to_dict(), default=api_base.serializer))
     self.response.headers['Content-Type'] = 'application/json'
 
   def post(self):
@@ -98,15 +63,19 @@ class Users(BaseHandler):
 
     self.respond_with_user(user)
 
+  @auth.require_credentials
+  def get(self, user):
+    self.respond_with_user(user)
 
-class Ideas(BaseHandler):
+
+class Ideas(api_base.BaseHandler):
   """RESTful endpoint for listing ideas."""
 
   # @auth.require_credentials
   # def get(self, user):
   #   ideas = models.Idea.query(ancestor=user.key).fetch()
   #   idea_dicts = [idea.to_dict() for idea in ideas]
-  #   self.response.write(json.dumps({'ideas': idea_dicts}, default=serializer))
+  #   self.response.write(json.dumps({'ideas': idea_dicts}, default=api_base.serializer))
   #   self.response.headers['Content-Type'] = 'application/json'
 
   def get(self, user_id):
@@ -132,11 +101,3 @@ app = webapp2.WSGIApplication([
   webapp2.Route(r'/api/users/<user_id:[^/]*>', Users),
   webapp2.Route(r'/api/users', Users),
 ], debug=config.DEBUG)
-
-
-def serializer(obj):
-  """JSON serializer for objects not serializable by default json code"""
-  if isinstance(obj, datetime.datetime):
-    serial = obj.isoformat()
-    return serial
-  raise TypeError ("Type not serializable")

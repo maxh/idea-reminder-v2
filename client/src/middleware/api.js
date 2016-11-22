@@ -2,8 +2,8 @@ const API_ROOT = '/api';
 
 const LINK_CODE_HEADER = 'X-IdeaReminder-LinkCode';
 
-const callApi = (endpoint, options) => {
-  const { linkCode, method, content } = options;
+const makeApiCall = (options) => {
+  const {endpoint, content, method, linkCode} = options;
 
   const path = API_ROOT + endpoint;
   const fetchOptions = {
@@ -41,7 +41,7 @@ export default store => next => action => {
     return next(action)
   }
 
-  const { endpoint, options, types } = callAPI
+  const { endpoint, content, method, page, types } = callAPI
 
   if (typeof endpoint !== 'string') {
     throw new Error('Specify a string endpoint URL.')
@@ -62,13 +62,16 @@ export default store => next => action => {
   const [ requestType, successType, failureType ] = types
   next(actionWith({ type: requestType }))
 
-  return callApi(endpoint, options).then(
+  const linkCode = store.getState().linkCode;
+
+  return makeApiCall({endpoint, content, method, linkCode}).then(
     response => next(actionWith({
       response,
       type: successType
     })),
     error => next(actionWith({
       type: failureType,
+      page: page,
       errorMessage: error.message || 'Unknown server error.'
     }))
   )
