@@ -1,8 +1,30 @@
+import firebase from 'firebase/firebase-browser';
 import React from 'react';
 import { connect } from 'react-redux';
 import { IndexLink } from 'react-router';
 import { Nav, Navbar, NavItem, MenuItem, NavDropdown } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
+
+import { startSignOut, startSignIn } from '../actions/index';
+
+class UserNavItem extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    if (this.props.googleUser.isFetching) {
+      // Loading.
+      return <NavItem>Loading</NavItem>;
+    } else if (this.props.googleUser.current) {
+      // Signed in.
+      return ;
+    } else {
+      // Not signed in.
+      return false;
+    }
+  }
+}
 
 
 class AppBar extends React.Component {
@@ -24,23 +46,17 @@ class AppBar extends React.Component {
           <Navbar.Toggle />
         </Navbar.Header>
         <Navbar.Collapse>
-          <Nav pullRight>
-            <LinkContainer to="/donate">
-              <NavItem>Donate</NavItem>
+          {this.props.googleUser.current &&
+            <Nav pullRight>
+            <LinkContainer to="/unsubscribe">
+              <NavItem>Unsubscribe</NavItem>
             </LinkContainer>
-            <NavDropdown eventKey={3} title="maxheinritz@gmail.com" id="basic-nav-dropdown">
-              <LinkContainer to="/settings">
-                <MenuItem>Settings</MenuItem>
-              </LinkContainer>
-              <LinkContainer to="/account">
-                <MenuItem>Add password</MenuItem>
-              </LinkContainer>
-              <MenuItem divider />
-              <LinkContainer to="/logout">
-                <MenuItem>Logout</MenuItem>
-              </LinkContainer>
-          </NavDropdown>
-          </Nav>
+            <LinkContainer to="/list">
+              <NavItem>Responses</NavItem>
+            </LinkContainer>
+              <NavItem onClick={this.props.startSignOut}>Sign out</NavItem>
+            </Nav>
+          }
         </Navbar.Collapse>
       </Navbar>
     );
@@ -54,5 +70,12 @@ class AppBar extends React.Component {
 
 // For context on {pure: false}, see:
 // github.com/react-bootstrap/react-router-bootstrap/issues/152
-export default connect(null, null, null, {pure: false})(AppBar);
+export default connect((state) => {
+  return {
+    googleUser: state.googleUser
+  }
+}, {
+  startSignIn: startSignIn,
+  startSignOut: startSignOut
+}, null, {pure: false})(AppBar);
 

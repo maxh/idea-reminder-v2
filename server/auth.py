@@ -1,4 +1,6 @@
 import datetime
+from oauth2client import client, crypt
+import json
 import posixpath
 import random
 import string
@@ -10,46 +12,34 @@ import config
 import models
 
 
-def generate_link(user, path):
-  link_code = generate_link_code()
-  expiration = datetime.datetime.now() + datetime.timedelta(days=7)
-  models.Link(parent=user.key, expiration=expiration, link_code=link_code).put()
-  query_string = urllib.urlencode({
-    'linkCode': link_code,
-    'userId': user.key.urlsafe()
-  })
-  full_path = posixpath.join(config.URL, path)
-  return 'https://%s?%s' % (full_path, query_string)
+AUTH_HEADER = 'X-Google-Auth-Token-ID';
 
 
-def generate_link_code(size=50, chars=string.ascii_lowercase + string.digits):
-  """Generates a random link code."""
-  # TODO(meh): Ensure that a link with this code doesn't already exist in NDB.
-  return ''.join(random.choice(chars) for _ in range(size))
+def require_token(func):
 
+  def wrapper(self):
+    token = self.request.headers.get(AUTH_HEADER)
 
-def require_credentials(func):
-  """A decorator for request validation based on user ID and link code."""
-
-  def wrapper(self, user_id):
-    # Ensure the user ID is known.
-    user = None
     try:
-      user_key = ndb.Key(urlsafe=user_id)
-      user = user_key.get()
+      token_info = client.verify_id_token(token, config.CLIENT_ID)
+      if token_info['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+        raise crypt.AppIdentityError('Wrong issuer.')
     except:
-      pass
+      # Invalid token
+      self.abort_clean('Bad credentials.')
 
+    return func(self, token_info)
+
+  return wrapper
+
+
+def require_user(func):
+
+  @require_token
+  def wrapper(self, token_info):
+    user = ndb.Key(models.User, token_info.get('sub')).get()
     if user is None:
-      self.abort_clean('Unknown user ID.')
-
-    # Ensure the link code is valid.
-    link_code = self.request.headers.get('X-IdeaReminder-LinkCode')
-    user_links = models.Link.query(ancestor=user_key)
-    link = user_links.filter(models.Link.link_code == link_code).get()
-    if link is None or link.expiration < datetime.datetime.now():
-      self.abort_clean('This link has expired.', user.email)
-
-    return func(self, user)
+      self.abort_clean('No user.')
+    func(self, user)
 
   return wrapper

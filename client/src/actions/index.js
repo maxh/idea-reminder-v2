@@ -1,5 +1,120 @@
 import { CALL_API } from '../middleware/api'
 
+const fetchAuthLib = (callback) => {
+  const firstScriptEl = document.getElementsByTagName('script')[0];
+  let scriptEl = document.createElement('script');
+  scriptEl.id = 'google-gapi';
+  scriptEl.src = '//apis.google.com/js/client:platform.js';
+  scriptEl.onload = callback;
+  firstScriptEl.parentNode.insertBefore(scriptEl, firstScriptEl);
+}
+
+const finishSignIn = (res) => {
+  const basicProfile = res.getBasicProfile();
+  const authResponse = res.getAuthResponse();
+  res.googleId = basicProfile.getId();
+  res.tokenObj = authResponse;
+  res.tokenId = authResponse.id_token;
+  res.accessToken = authResponse.access_token;
+  res.profileObj = {
+    googleId: basicProfile.getId(),
+    imageUrl: basicProfile.getImageUrl(),
+    email: basicProfile.getEmail(),
+    name: basicProfile.getName(),
+    givenName: basicProfile.getGivenName(),
+    familyName: basicProfile.getFamilyName(),
+  };
+  return {
+    type: 'GOOGLE_SIGN_IN_SUCCESS',
+    googleUser: res
+  };
+}
+
+export const ensureAuthLibLoaded = () => {
+  return (dispatch, getState) => {
+    const authLib = getState().authLib;
+    if (authLib.promise) {
+      return authLib.promise;  // Already loading.
+    }
+
+    const promise = new Promise((resolve, reject) => {
+      fetchAuthLib(() => {
+        const params = {
+          client_id: '116575144698-gk68303mu8j2snb048ajsdq9mhe3s56u.apps.googleusercontent.com'
+        };
+        window.gapi.load('auth2', () => {
+          window.gapi.auth2.init(params).then(() => {
+            resolve(dispatch({type: 'AUTH_LIB_LOAD_SUCCESS'}));
+          });
+        });
+      });
+    });
+    return dispatch({type: 'AUTH_LIB_LOAD_REQUEST', promise: promise});
+  }
+}
+
+export const attemptAutoSignIn = () => {
+  return (dispatch, getState) => {
+    return dispatch(ensureAuthLibLoaded()).then(() => {
+      let auth2 = getState().authLib.instance;
+      if (auth2.isSignedIn.get()) {
+        return dispatch(finishSignIn(auth2.currentUser.get()));
+      } else {
+        return Promise.resolve();
+      }
+    });
+  };
+}
+
+export const startSignIn = () => {
+  return (dispatch, getState) => {
+    dispatch({type: 'GOOGLE_SIGN_IN_REQUEST'})
+    getState().authLib.instance.signIn().then((res) => {
+      dispatch(finishSignIn(res));
+    });
+  };
+}
+
+export const startSignOut = (email) => {
+  return (dispatch, getState) => {
+    dispatch({type: 'GOOGLE_SIGN_OUT_SUCCESS'})
+    getState().authLib.instance.signOut().then(() => {
+      dispatch({type: 'GOOGLE_SIGN_OUT_SUCCESS'})
+    })
+  };
+}
+
+
+export const USER_REQUEST = 'USER_REQUEST'
+export const USER_SUCCESS = 'USER_SUCCESS'
+export const USER_FAILURE = 'USER_FAILURE'
+
+export const ensureAccountCreated = (googleUser) => {
+  return {
+    [CALL_API]: {
+      endpoint: `/account`,
+      types: [USER_REQUEST, USER_SUCCESS, USER_FAILURE],
+      method: 'POST'
+    }
+  }; 
+}
+
+export const startUnsubscribe = () => {
+  return (dispatch, getState) => {
+    return dispatch(attemptAutoSignIn()).then(() => {
+      return dispatch({
+        [CALL_API]: {
+          endpoint: `/account`,
+          types: [USER_REQUEST, USER_SUCCESS, USER_FAILURE],
+          method: 'PATCH',
+          content: {isEnabled: false},
+        }
+      });
+    });
+  }  
+}
+
+
 export const SET_AUTH = 'SET_AUTH'
 
 export const setAuth = (userId, linkCode) => {
@@ -12,68 +127,9 @@ export const setAuth = (userId, linkCode) => {
 
 export const CLEAR_ERROR = 'CLEAR_ERROR'
 
+
 export const clearError = () => {
   return {type: CLEAR_ERROR}
-}
-
-
-export const SUBSCRIBE_EMAIL_EDIT = 'SUBSCRIBE_EMAIL_EDIT'
-
-export const editSubscribeEmail = (email) => {
-  return {
-    type: SUBSCRIBE_EMAIL_EDIT,
-    subscribeEmail: email
-  }
-}
-
-
-export const USER_REQUEST = 'USER_REQUEST'
-export const USER_SUCCESS = 'USER_SUCCESS'
-export const USER_FAILURE = 'USER_FAILURE'
-
-const startUserRequest = (options) => {
-  return (dispatch, getState) => {
-    const userId = getState().user.userId;
-    dispatch({[CALL_API]: {
-      ...options,
-      endpoint: `/users/${userId}`,
-      types: [USER_REQUEST, USER_SUCCESS, USER_FAILURE],
-    }});
-  };
-}
-
-export const fetchUser = () => {
-  return startUserRequest({
-    method: 'GET'
-  });
-}
-
-export const startVerify = () => {
-  return startUserRequest({
-    method: 'PATCH',
-    content: {isVerified: true},
-    page: 'verify'
-  });
-}
-
-export const startUnsubscribe = () => {
-  return startUserRequest({
-    method: 'PATCH',
-    content: {isEnabled: false},
-    page: 'unsubscribe'
-  });
-}
-
-export const startSubscribe = (email) => {
-  return {
-    [CALL_API]: {
-      endpoint: '/users',
-      types: [USER_REQUEST, USER_SUCCESS, USER_FAILURE],
-      method: 'POST',
-      content: {email: email},
-      page: 'home'
-    }
-  };
 }
 
 
@@ -83,10 +139,13 @@ export const IDEAS_SUCCESS = 'IDEAS_SUCCESS'
 
 export const startList = () => {
   return (dispatch, getState) => {
-    const userId = getState().user.userId;
-    dispatch({[CALL_API]: {
-      endpoint: `/users/${userId}/ideas`,
-      types: [IDEAS_REQUEST, IDEAS_SUCCESS, IDEAS_FAILURE],
-    }});
-  };
+    return dispatch(attemptAutoSignIn()).then(() => {
+      return dispatch({
+        [CALL_API]: {
+          endpoint: `/responses`,
+          types: [IDEAS_REQUEST, IDEAS_SUCCESS, IDEAS_FAILURE],
+        }
+      });
+    });
+  }  
 }

@@ -1,86 +1,47 @@
+import GoogleLogin from 'react-google-login';
 import React from 'react';
 import { HelpBlock, FormGroup, Button, Form, Jumbotron, FormControl } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import { clearError, editSubscribeEmail, startSubscribe } from '../actions/index';
+import { clearError, editSubscribeEmail, startSignIn } from '../actions/index';
 
 
 class SubscribeForm extends React.Component {
-  constructor(props) {
-    super(props)
-    this.handleChange = this.handleChange.bind(this);
-    this.handleClick = this.handleClick.bind(this);
-  }
 
   render() {
-    if (this.props.subscribeEmail && this.props.user) {
+    if (this.props.googleUser.isFetching && false) {
       // Just signed up.
       return (
         <div className="success">
-          <span className="glyphicon glyphicon-ok"></span>
-          Welcome! Please click the verification link in the email we just sent.
+          Loading...
         </div>
       );
-    } else if (this.props.user) {
-      // Return user.
+    } else if (this.props.googleUser.current) {
       return (
         <div className="success">
-          Welcome back, {this.props.user.email}.
+          <span className="glyphicon glyphicon-ok"></span>
+          Welcome, {this.props.googleUser.current.profileObj.name}.
         </div>
       );
     } else {
       return (
-        <div>
-          <Form inline>
-            <FormGroup validationState={this.props.error ? 'error' : null}>
-              <FormControl
-                type="text"
-                placeholder="Your email"
-                disabled={this.props.isLoading}
-                onChange={this.handleChange} />
-              <Button
-                type="submit"
-                className="subscribe"
-                disabled={this.props.isLoading}
-                onClick={this.handleClick}>
-                Subscribe
-              </Button>
-              <HelpBlock>{this.props.error}</HelpBlock>
-            </FormGroup>
-          </Form>
-        </div>
+        <Button onClick={this.props.startSignIn}>Sign in with Google</Button>
       );     
     }
-
-  }
-
-  handleChange(event) {
-    this.props.onChange(event.target.value);
-  }
-
-  handleClick() {
-    this.props.onClick(this.props.subscribeEmail);
   }
 }
 
 const mapStateToProps = (state) => {
-  const {user, error} = state;
-  return {...user, error};
-}
-const mapDispatchToProps = (dispatch) => {
-	return {
-    onChange: (email) => {
-      dispatch(editSubscribeEmail(email));
-      dispatch(clearError());
-    },
-		onClick: (email) => {
-      dispatch(startSubscribe(email));
-    }
-	};
+  console.log(state);
+  return {
+    user: state.user,
+    googleUser: state.googleUser,
+    authLib: state.authLib
+  };
 }
 
 const ActiveSubscribeForm = connect(
   mapStateToProps,
-  mapDispatchToProps
+  {startSignIn: startSignIn}
 )(SubscribeForm);
 
 
@@ -106,7 +67,7 @@ const Home = () => {
 					</div>
 					<div>
 					  <h3>3</h3>
-					  Your replies will be stored for later and visible only to you.
+					  Your replies will be stored in a Google Spreadsheet visible only to you.
 					 </div>
 		    </div>
 	    </div>

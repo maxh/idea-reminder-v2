@@ -4,9 +4,8 @@ import { startList } from '../actions/index';
 
 
 class StaticList extends React.Component {
-  componentWillMount() {
-    var params = this.props.params;
-    this.props.list(params.userId, params.linkCode);
+  componentDidMount() {
+    this.props.startList()
   }
 
   render() {
@@ -48,11 +47,11 @@ const mapStateToProps = (state) => {
 }
 const mapDispatchToProps = (dispatch) => {
   return {
-    list: (userId, linkCode) => { dispatch(startList(userId, linkCode)); }
+    startList: startList
   };
 }
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  {startList: startList}
 )(StaticList);

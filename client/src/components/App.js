@@ -8,20 +8,11 @@ import AppBar from './AppBar';
 import Home from './Home';
 import List from './List';
 import Unsubscribe from './Unsubscribe';
-import Verify from './Verify';
 
-import { fetchUser, setAuth } from '../actions/index.js'
-
+import { requireAuth } from '../lib/requireAuthentication';
 
 
 class StaticMain extends React.Component {
-  componentWillMount() {
-    var query = this.props.location.query;
-    this.props.setAuth(query.userId, query.linkCode);
-    if (query.userId && query.linkCode) {
-      this.props.fetchUser();
-    }
-  }
   render() {
     return (
       <div className={this.props.location.pathname}>
@@ -34,10 +25,13 @@ class StaticMain extends React.Component {
   }
 }
 
-const Main = connect(null, {
-  setAuth: setAuth,
-  fetchUser: fetchUser
-})(StaticMain);
+const SignIn = () => {
+  return (
+    <div>
+      Please sign in to continue.
+    </div>
+  );
+}
 
 const Donate = () => {
   return (
@@ -58,12 +52,12 @@ const NotFound = () => {
 const App = (props) => {
   return (
     <Router history={props.history}>
-      <Route path="/" component={Main}>
+      <Route path="/" component={StaticMain}>
         <IndexRoute component={Home} />
         <Route path="/donate" component={Donate} />
-        <Route path="/list" component={List} />
-        <Route path="/unsubscribe" component={Unsubscribe} />
-        <Route path="/verify" component={Verify} />
+        <Route path="/sign-in" component={SignIn} />
+        <Route path="/list" component={requireAuth(List)} />
+        <Route path="/unsubscribe" component={requireAuth(Unsubscribe)} />
         <Route path='/404' component={NotFound} />
         <Redirect from='*' to='/404' />
       </Route>

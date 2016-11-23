@@ -1,9 +1,9 @@
 const API_ROOT = '/api';
 
-const LINK_CODE_HEADER = 'X-IdeaReminder-LinkCode';
+const AUTH_HEADER = 'X-Google-Auth-Token-ID';
 
 const makeApiCall = (options) => {
-  const {endpoint, content, method, linkCode} = options;
+  const {endpoint, content, method, tokenId} = options;
 
   const path = API_ROOT + endpoint;
   const fetchOptions = {
@@ -11,8 +11,8 @@ const makeApiCall = (options) => {
     headers: new Headers()
   };
 
-  if (linkCode) {
-    fetchOptions.headers.set(LINK_CODE_HEADER, linkCode);
+  if (tokenId) {
+    fetchOptions.headers.set(AUTH_HEADER, tokenId);
   }
 
   if (content) {
@@ -62,9 +62,10 @@ export default store => next => action => {
   const [ requestType, successType, failureType ] = types
   next(actionWith({ type: requestType }))
 
-  const linkCode = store.getState().linkCode;
+  const currentGoogleUser = store.getState().googleUser.current;
+  const tokenId = currentGoogleUser && currentGoogleUser.tokenId;
 
-  return makeApiCall({endpoint, content, method, linkCode}).then(
+  return makeApiCall({endpoint, content, method, tokenId}).then(
     response => next(actionWith({
       response,
       type: successType

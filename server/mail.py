@@ -111,7 +111,7 @@ def extract_latest_message(full_email_text):
   return latest_message.rstrip()
 
 
-def send_email_from_template(user_email, template, params):
+def send_email_from_template(user_email, template, params={}):
   # "template" can be a string or an actual Jinja template.
   if isinstance(template, basestring):
     template = TEMPLATES.get_template(template + '.html')
