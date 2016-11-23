@@ -1,4 +1,3 @@
-import firebase from 'firebase/firebase-browser';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import 'bootstrap/dist/css/bootstrap.css';
@@ -25,8 +24,11 @@ const store = createStore(
 // Create an enhanced history that syncs navigation events with the store
 const history = syncHistoryWithStore(browserHistory, store)
 
+// When the user changes the route, clear the error.
 history.listen(location => clearError())
 
+// When the user signs in, ensure they have an account in our backend.
+// When the user signs out, leave them on the home page.
 const monitorSignInState = () => {
   let current
   store.subscribe(() => {
@@ -41,8 +43,9 @@ const monitorSignInState = () => {
     }
   })
 }
-
 monitorSignInState();
+
+// Initialize authentication infrastructure.
 store.dispatch(ensureAuthLibLoaded());
 store.dispatch(attemptAutoSignIn());
 

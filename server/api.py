@@ -48,6 +48,11 @@ class Account(api_base.BaseHandler):
     self.respond(user)
 
 
+  @auth.require_user
+  def get(self, user):
+    self.respond(user)
+
+
 class Responses(api_base.BaseHandler):
   """RESTful endpoint for listing ideas."""
 

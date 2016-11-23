@@ -27,21 +27,21 @@ function authLib(state = {isLoading: false}, action) {
   }
 }
 
-function googleUser(state = {isFetching: false}, action) {
+function googleUser(state = {isLoading: false}, action) {
   switch (action.type) {
     case 'GOOGLE_SIGN_IN_REQUEST':
     case 'GOOGLE_SIGN_OUT_REQUEST':
       return {
-        isFetching: true
+        isLoading: true
       };
     case 'GOOGLE_SIGN_IN_SUCCESS':
       return {
-        isFetching: false,
+        isLoading: false,
         current: action.googleUser
       };
     case 'GOOGLE_SIGN_OUT_SUCCESS':
       return {
-        isFetching: false,
+        isLoading: false,
         current: null
       };
   default:
@@ -49,37 +49,36 @@ function googleUser(state = {isFetching: false}, action) {
   }
 }
 
-function error(state = '', action) {
+function account(state = {isLoading: false}, action) {
   switch (action.type) {
-    case ActionTypes.USER_FAILURE:
-    case ActionTypes.IDEAS_FAILURE:
-      return action.errorMessage;
-    case ActionTypes.CLEAR_ERROR:
-      return '';
+    case ActionTypes.ACCOUNT_REQUEST:
+      return {
+        ...state,
+        isLoading: true
+      };
+    case ActionTypes.ACCOUNT_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        current: action.response
+      };
+    case ActionTypes.ACCOUNT_FAILURE:
+      return {
+        ...state,
+        isLoading: false
+      };
     default:
       return state;
   }
 }
 
-function unsubscribe(state = {}, action) {
+function error(state = '', action) {
   switch (action.type) {
-    case ActionTypes.IDEAS_REQUEST:
-      return {
-        ...state,
-        isLoading: true
-      };
-    case ActionTypes.IDEAS_SUCCESS:
-      return {
-        ...state,
-        isLoading: false,
-        ideas: action.response.ideas
-      };
+    case ActionTypes.ACCOUNT_FAILURE:
     case ActionTypes.IDEAS_FAILURE:
-      return {
-        ...state,
-        isLoading: false,
-        errorMessage: action.errorMessage
-      };
+      return action.errorMessage;
+    case ActionTypes.CLEAR_ERROR:
+      return '';
     default:
       return state;
   }
@@ -111,6 +110,7 @@ function ideas(state = {}, action) {
 
 export default {
   error,
+  account,
   authLib,
   linkCode,
   ideas,

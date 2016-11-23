@@ -1,5 +1,7 @@
 import { CALL_API } from '../middleware/api'
 
+import { push } from 'react-router-redux'
+
 const fetchAuthLib = (callback) => {
   const firstScriptEl = document.getElementsByTagName('script')[0];
   let scriptEl = document.createElement('script');
@@ -28,6 +30,10 @@ const finishSignIn = (res) => {
     type: 'GOOGLE_SIGN_IN_SUCCESS',
     googleUser: res
   };
+}
+
+export const pushPath = (path) => {
+  return push(path);
 }
 
 export const ensureAuthLibLoaded = () => {
@@ -85,33 +91,43 @@ export const startSignOut = (email) => {
 }
 
 
-export const USER_REQUEST = 'USER_REQUEST'
-export const USER_SUCCESS = 'USER_SUCCESS'
-export const USER_FAILURE = 'USER_FAILURE'
+export const ACCOUNT_REQUEST = 'ACCOUNT_REQUEST'
+export const ACCOUNT_SUCCESS = 'ACCOUNT_SUCCESS'
+export const ACCOUNT_FAILURE = 'ACCOUNT_FAILURE'
 
 export const ensureAccountCreated = (googleUser) => {
   return {
     [CALL_API]: {
       endpoint: `/account`,
-      types: [USER_REQUEST, USER_SUCCESS, USER_FAILURE],
+      types: [ACCOUNT_REQUEST, ACCOUNT_SUCCESS, ACCOUNT_FAILURE],
       method: 'POST'
     }
   }; 
 }
 
+export const updateAccount = (update) => {
+  return {
+    [CALL_API]: {
+      endpoint: `/account`,
+      types: [ACCOUNT_REQUEST, ACCOUNT_SUCCESS, ACCOUNT_FAILURE],
+      method: 'PATCH',
+      content: update
+    }
+  };
+}
+
+export const loadAccount = () => {
+  return {
+    [CALL_API]: {
+      endpoint: `/account`,
+      types: [ACCOUNT_REQUEST, ACCOUNT_SUCCESS, ACCOUNT_FAILURE],
+      method: 'GET'
+    }
+  };
+}
+
 export const startUnsubscribe = () => {
-  return (dispatch, getState) => {
-    return dispatch(attemptAutoSignIn()).then(() => {
-      return dispatch({
-        [CALL_API]: {
-          endpoint: `/account`,
-          types: [USER_REQUEST, USER_SUCCESS, USER_FAILURE],
-          method: 'PATCH',
-          content: {isEnabled: false},
-        }
-      });
-    });
-  }  
+  return updateAccount({isEnabled: false});
 }
 
 
@@ -125,8 +141,8 @@ export const setAuth = (userId, linkCode) => {
   }
 }
 
-export const CLEAR_ERROR = 'CLEAR_ERROR'
 
+export const CLEAR_ERROR = 'CLEAR_ERROR'
 
 export const clearError = () => {
   return {type: CLEAR_ERROR}

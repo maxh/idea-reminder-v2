@@ -4,7 +4,7 @@ import { startUnsubscribe } from '../actions/index.js';
 
 
 class StaticUnsubscribe extends React.Component {
-  componentWillMount() {
+  componentDidMount() {
     this.props.startUnsubscribe();
   }
 

@@ -45,11 +45,6 @@ class StaticList extends React.Component {
 const mapStateToProps = (state) => {
   return state.ideas;
 }
-const mapDispatchToProps = (dispatch) => {
-  return {
-    startList: startList
-  };
-}
 
 export default connect(
   mapStateToProps,

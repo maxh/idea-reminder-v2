@@ -128,6 +128,19 @@ li.settings {
   padding-right: 6px;
 }
 
+/* Sign in */
+
+.\/sign-in .content {
+  text-align: center;
+}
+
+.\/sign-in .explanation {
+  margin-bottom: 8px;
+}
+
+.\/settings .content {
+  width: 200px;
+}
 /* Ideas */
 
 table.ideas td.date {

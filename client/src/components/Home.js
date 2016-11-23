@@ -1,15 +1,13 @@
-import GoogleLogin from 'react-google-login';
 import React from 'react';
-import { HelpBlock, FormGroup, Button, Form, Jumbotron, FormControl } from 'react-bootstrap';
+import { Button, Jumbotron } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import { clearError, editSubscribeEmail, startSignIn } from '../actions/index';
+import { startSignIn } from '../actions/index';
 
 
 class SubscribeForm extends React.Component {
 
   render() {
-    if (this.props.googleUser.isFetching && false) {
-      // Just signed up.
+    if (this.props.googleUser.isLoading || this.props.authLib.isLoading) {
       return (
         <div className="success">
           Loading...
@@ -31,7 +29,6 @@ class SubscribeForm extends React.Component {
 }
 
 const mapStateToProps = (state) => {
-  console.log(state);
   return {
     user: state.user,
     googleUser: state.googleUser,

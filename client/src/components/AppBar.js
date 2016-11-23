@@ -1,30 +1,10 @@
-import firebase from 'firebase/firebase-browser';
 import React from 'react';
 import { connect } from 'react-redux';
 import { IndexLink } from 'react-router';
-import { Nav, Navbar, NavItem, MenuItem, NavDropdown } from 'react-bootstrap';
+import { Nav, Navbar, NavItem } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 
 import { startSignOut, startSignIn } from '../actions/index';
-
-class UserNavItem extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  render() {
-    if (this.props.googleUser.isFetching) {
-      // Loading.
-      return <NavItem>Loading</NavItem>;
-    } else if (this.props.googleUser.current) {
-      // Signed in.
-      return ;
-    } else {
-      // Not signed in.
-      return false;
-    }
-  }
-}
 
 
 class AppBar extends React.Component {
@@ -35,6 +15,8 @@ class AppBar extends React.Component {
   }
 
   render() {
+    const signedIn = Boolean(this.props.googleUser.current);
+    const userLoading = this.props.googleUser.isLoading || this.props.authLib.isLoading;
     return (
       <Navbar fixedTop={true} collapseOnSelect={true}
               expanded={this.state.expanded}
@@ -46,17 +28,32 @@ class AppBar extends React.Component {
           <Navbar.Toggle />
         </Navbar.Header>
         <Navbar.Collapse>
-          {this.props.googleUser.current &&
+
+          {signedIn &&
             <Nav pullRight>
-            <LinkContainer to="/unsubscribe">
-              <NavItem>Unsubscribe</NavItem>
-            </LinkContainer>
-            <LinkContainer to="/list">
-              <NavItem>Responses</NavItem>
-            </LinkContainer>
+              <LinkContainer to="/settings">
+                <NavItem>Settings</NavItem>
+              </LinkContainer>
+              <LinkContainer to="/list">
+                <NavItem>Responses</NavItem>
+              </LinkContainer>
+              <LinkContainer to="/donate">
+                <NavItem>Donate</NavItem>
+              </LinkContainer>
               <NavItem onClick={this.props.startSignOut}>Sign out</NavItem>
             </Nav>
           }
+
+          {!signedIn &&
+            <Nav pullRight>
+              <LinkContainer to="/donate">
+                <NavItem>Donate</NavItem>
+              </LinkContainer>
+              {!userLoading && <NavItem onClick={this.props.startSignIn}>Sign in</NavItem>}
+              {userLoading && <NavItem>Loading...</NavItem>}
+            </Nav>
+          }
+
         </Navbar.Collapse>
       </Navbar>
     );
@@ -72,7 +69,8 @@ class AppBar extends React.Component {
 // github.com/react-bootstrap/react-router-bootstrap/issues/152
 export default connect((state) => {
   return {
-    googleUser: state.googleUser
+    googleUser: state.googleUser,
+    authLib: state.authLib
   }
 }, {
   startSignIn: startSignIn,

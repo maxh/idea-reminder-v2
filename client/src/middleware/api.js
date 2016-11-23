@@ -1,3 +1,5 @@
+import { camelizeKeys } from 'humps'
+
 const API_ROOT = '/api';
 
 const AUTH_HEADER = 'X-Google-Auth-Token-ID';
@@ -26,7 +28,8 @@ const makeApiCall = (options) => {
         if (!response.ok) {
           return Promise.reject(json)
         }
-        return Object.assign({}, json);
+        const camelizedJson = camelizeKeys(json)
+        return Object.assign({}, camelizedJson);
       })
     )
 }
