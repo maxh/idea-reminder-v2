@@ -12,19 +12,20 @@ import config
 import models
 
 
-AUTH_HEADER = 'X-Google-Auth-Token-ID';
+AUTH_TOKEN_HEADER = 'X-Google-Auth-Token-ID'
+LINK_CODE_HEADER = 'X-IdeaReminder-LinkCode'
 
 
 def require_token(func):
 
   def wrapper(self):
-    token = self.request.headers.get(AUTH_HEADER)
+    token = self.request.headers.get(AUTH_TOKEN_HEADER)
 
     try:
       token_info = client.verify_id_token(token, config.CLIENT_ID)
       if token_info['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
         raise crypt.AppIdentityError('Wrong issuer.')
-    except:
+    except Exception:
       # Invalid token
       self.abort_clean('Bad credentials.')
 
@@ -33,13 +34,13 @@ def require_token(func):
   return wrapper
 
 
-def require_user(func):
+def require_account(func):
 
   @require_token
   def wrapper(self, token_info):
-    user = ndb.Key(models.User, token_info.get('sub')).get()
-    if user is None:
-      self.abort_clean('No user.')
-    func(self, user)
+    account = ndb.Key(models.Account, token_info.get('sub')).get()
+    if account is None:
+      self.abort_clean('No account.')
+    func(self, account)
 
   return wrapper

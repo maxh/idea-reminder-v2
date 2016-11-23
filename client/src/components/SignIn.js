@@ -7,7 +7,40 @@ import { Button } from 'react-bootstrap';
 import { startSignIn, pushPath } from '../actions/index';
 
 
-class SignInStatic extends React.Component {
+class SignInButtonBase extends React.Component {
+
+  render() {
+    if (this.props.authLib.isLoading) {
+      return null;
+    } else if (this.props.authLib.error) {
+      return <div className="error">{this.props.authLib.error}</div>;
+    } else if (this.props.googleUser.current) {
+      return (
+        <div>
+          <span className="glyphicon glyphicon-ok"></span>
+          Welcome, {this.props.googleUser.current.profileObj.name}.
+        </div>
+      );
+    } else {
+      return (
+        <Button
+            onClick={this.props.startSignIn}
+            disabled={this.props.googleUser.isLoading}>
+          Sign in with Google
+        </Button>
+      )
+    }
+  }
+}
+
+export const SignInButton = connect(
+  state => ({googleUser: state.googleUser, authLib: state.authLib, account: state.account}),
+  {startSignIn: startSignIn}
+)(SignInButtonBase);
+
+
+
+class SignInBase extends React.Component {
 
   componentWillMount() {
     this.checkAuth(this.props)
@@ -18,7 +51,7 @@ class SignInStatic extends React.Component {
   }
 
   checkAuth(props) {
-    if (props.googleUser.current) {
+    if (props.googleUser.current && props.account.current) {
       const next = this.props.location.query.next || '/';
       this.props.pushPath(next);
     }
@@ -27,19 +60,20 @@ class SignInStatic extends React.Component {
   render() {
     return (
       <div className="content">
-        <div className="explanation">Please sign in to contine</div>
-        <Button onClick={this.props.startSignIn}>Sign in with Google</Button>
+        <div className="explanation">Please sign in to continue</div>
+        <SignInButton />
       </div>
     )
   }
 }
 
 const mapStateToProps = (state) => ({
-  googleUser: state.googleUser
+  googleUser: state.googleUser,
+  account: state.account
 })
 
 export default connect(
   mapStateToProps,
   {startSignIn: startSignIn,
     pushPath: pushPath}
-)(SignInStatic)
+)(SignInBase)

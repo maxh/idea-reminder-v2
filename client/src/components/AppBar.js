@@ -16,7 +16,10 @@ class AppBar extends React.Component {
 
   render() {
     const signedIn = Boolean(this.props.googleUser.current);
-    const userLoading = this.props.googleUser.isLoading || this.props.authLib.isLoading;
+    const libLoading = this.props.authLib.isLoading;
+    const userLoading = this.props.googleUser.isLoading;
+    const error = this.props.authLib.error;
+    const ready = !(signedIn || libLoading || error);
     return (
       <Navbar fixedTop={true} collapseOnSelect={true}
               expanded={this.state.expanded}
@@ -49,8 +52,7 @@ class AppBar extends React.Component {
               <LinkContainer to="/donate">
                 <NavItem>Donate</NavItem>
               </LinkContainer>
-              {!userLoading && <NavItem onClick={this.props.startSignIn}>Sign in</NavItem>}
-              {userLoading && <NavItem>Loading...</NavItem>}
+              {ready && <NavItem onClick={this.props.startSignIn} disabled={userLoading}>Sign in</NavItem>}
             </Nav>
           }
 

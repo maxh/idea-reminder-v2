@@ -12,7 +12,7 @@ handlers:
 - url: /api/.*
   script: server.api.app
 
-- url: /mail/send-reminders
+- url: /mail/send-reminders/.*
   script: server.mail.app
   login: admin
 

@@ -2,13 +2,18 @@ import { CALL_API } from '../middleware/api'
 
 import { push } from 'react-router-redux'
 
-const fetchAuthLib = (callback) => {
-  const firstScriptEl = document.getElementsByTagName('script')[0];
-  let scriptEl = document.createElement('script');
-  scriptEl.id = 'google-gapi';
-  scriptEl.src = '//apis.google.com/js/client:platform.js';
-  scriptEl.onload = callback;
-  firstScriptEl.parentNode.insertBefore(scriptEl, firstScriptEl);
+const AUTH_CLIENT_ID = '116575144698-gk68303mu8j2snb048ajsdq9mhe3s56u.apps.googleusercontent.com'
+
+const fetchAuthLib = () => {
+  return new Promise(function(resolve, reject) {
+    const firstScriptEl = document.getElementsByTagName('script')[0];
+    let scriptEl = document.createElement('script');
+    scriptEl.id = 'google-gapi';
+    scriptEl.src = '//apis.google.com/js/client:platform.js';
+    scriptEl.onload = resolve;
+    scriptEl.onerror = reject;
+    firstScriptEl.parentNode.insertBefore(scriptEl, firstScriptEl);
+  });
 }
 
 const finishSignIn = (res) => {
@@ -36,7 +41,7 @@ export const pushPath = (path) => {
   return push(path);
 }
 
-export const ensureAuthLibLoaded = () => {
+const ensureAuthLibLoaded = () => {
   return (dispatch, getState) => {
     const authLib = getState().authLib;
     if (authLib.promise) {
@@ -44,49 +49,65 @@ export const ensureAuthLibLoaded = () => {
     }
 
     const promise = new Promise((resolve, reject) => {
-      fetchAuthLib(() => {
-        const params = {
-          client_id: '116575144698-gk68303mu8j2snb048ajsdq9mhe3s56u.apps.googleusercontent.com'
-        };
-        window.gapi.load('auth2', () => {
-          window.gapi.auth2.init(params).then(() => {
-            resolve(dispatch({type: 'AUTH_LIB_LOAD_SUCCESS'}));
-          });
-        });
-      });
+      fetchAuthLib()
+          .then(() => {
+            const params = {client_id: AUTH_CLIENT_ID};
+            window.gapi.load('auth2', () => {
+              window.gapi.auth2.init(params).then(() => {
+                resolve(dispatch({type: 'AUTH_LIB_LOAD_SUCCESS'}));
+              });
+            });
+          })
+          .catch((error) => {
+            dispatch({
+              type: 'AUTH_LIB_LOAD_FAILURE',
+              error: 'Unable to load authentication library. Try refreshing.'
+            });
+          })
     });
-    return dispatch({type: 'AUTH_LIB_LOAD_REQUEST', promise: promise});
+
+    dispatch({type: 'AUTH_LIB_LOAD_REQUEST', promise: promise});
+    return promise;
   }
 }
 
+const withAuth = (dispatch, func) => {
+  return dispatch(ensureAuthLibLoaded()).then(() => {
+    return func(window.gapi.auth2.getAuthInstance());
+  })
+}
+
 export const attemptAutoSignIn = () => {
-  return (dispatch, getState) => {
-    return dispatch(ensureAuthLibLoaded()).then(() => {
-      let auth2 = getState().authLib.instance;
-      if (auth2.isSignedIn.get()) {
-        return dispatch(finishSignIn(auth2.currentUser.get()));
-      } else {
-        return Promise.resolve();
+  return dispatch => {
+    return withAuth(dispatch, auth => {
+      if (auth.isSignedIn.get()) {
+        return dispatch(finishSignIn(auth.currentUser.get()));
       }
     });
   };
 }
 
 export const startSignIn = () => {
-  return (dispatch, getState) => {
+  return dispatch => {
     dispatch({type: 'GOOGLE_SIGN_IN_REQUEST'})
-    getState().authLib.instance.signIn().then((res) => {
-      dispatch(finishSignIn(res));
-    });
+    return withAuth(dispatch, auth =>
+      auth.signIn().then(
+          res => dispatch(finishSignIn(res)),
+          error => dispatch({
+            type: 'GOOGLE_SIGN_IN_FAILURE',
+            error: 'Unable to sign in. Try refreshing.'
+          }))
+    );
   };
 }
 
 export const startSignOut = (email) => {
-  return (dispatch, getState) => {
-    dispatch({type: 'GOOGLE_SIGN_OUT_SUCCESS'})
-    getState().authLib.instance.signOut().then(() => {
-      dispatch({type: 'GOOGLE_SIGN_OUT_SUCCESS'})
-    })
+  return dispatch => {
+    dispatch({type: 'GOOGLE_SIGN_OUT_REQUEST'})
+    return withAuth(dispatch, auth =>
+      auth.signOut().then(() => {
+        dispatch({type: 'GOOGLE_SIGN_OUT_SUCCESS'})
+      }));
   };
 }
 

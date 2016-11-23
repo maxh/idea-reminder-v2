@@ -21,9 +21,14 @@ body {
 
 .content-container {
   padding-top: 100px;
-  padding-bottom: 100px;
+  padding-bottom: 150px;
   padding-right: 10%;
   padding-left: 10%;
+}
+
+.error {
+  color: red;
+  font-style: italic;
 }
 
 /* App bar */

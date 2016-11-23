@@ -19,8 +19,13 @@ function authLib(state = {isLoading: false}, action) {
     case 'AUTH_LIB_LOAD_SUCCESS':
       return {
         ...state,
+        isLoading: false    
+      }
+    case 'AUTH_LIB_LOAD_FAILURE':
+      return {
+        ...state,
         isLoading: false,
-        instance: window.gapi.auth2.getAuthInstance()        
+        error: action.error     
       }
     default:
       return state;
@@ -43,6 +48,12 @@ function googleUser(state = {isLoading: false}, action) {
       return {
         isLoading: false,
         current: null
+      };
+    case 'GOOGLE_SIGN_IN_FAILURE':
+    case 'GOOGLE_SIGN_OUT_FAILURE':
+      return {
+        isLoading: false,
+        error: action.error
       };
   default:
     return state;

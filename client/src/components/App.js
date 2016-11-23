@@ -2,9 +2,8 @@ import React from 'react';
 
 import { IndexRoute, Redirect, Router, Route } from 'react-router';
 
-import { connect } from 'react-redux';
-
 import AppBar from './AppBar';
+import Donate from './Donate';
 import Home from './Home';
 import List from './List';
 import Settings from './Settings';
@@ -13,39 +12,25 @@ import Unsubscribe from './Unsubscribe';
 
 import { requireAuth } from '../infra/requireAuth';
 
-class StaticMain extends React.Component {
-  render() {
-    return (
-      <div className={this.props.location.pathname}>
-        <AppBar />
-        <div className="container content-container">
-          {this.props.children}
-        </div>
-      </div>
-    )
-  }
-}
-
-const Donate = () => {
+const Main = (props) => {
   return (
-    <div>
-      Donate
+    <div className={props.location.pathname}>
+      <AppBar />
+      <div className="container content-container">
+        {props.children}
+      </div>
     </div>
   );
 }
 
 const NotFound = () => {
-  return (
-    <div>
-      Oops! We couldn't find that page.
-    </div>
-  );
+  return <div>Oops! We couldn't find that page.</div>;
 }
 
 const App = (props) => {
   return (
     <Router history={props.history}>
-      <Route path="/" component={StaticMain}>
+      <Route path="/" component={Main}>
         <IndexRoute component={Home} />
         <Route path="/donate" component={Donate} />
         <Route path="/sign-in" component={SignIn} />

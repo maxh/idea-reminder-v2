@@ -2,10 +2,11 @@ import { camelizeKeys } from 'humps'
 
 const API_ROOT = '/api';
 
-const AUTH_HEADER = 'X-Google-Auth-Token-ID';
+const AUTH_TOKEN_HEADER = 'X-Google-Auth-Token-ID';
+const LINK_CODE_HEADER = 'X-IdeaReminder-LinkCode';
 
 const makeApiCall = (options) => {
-  const {endpoint, content, method, tokenId} = options;
+  const {endpoint, content, method, tokenId, linkCode} = options;
 
   const path = API_ROOT + endpoint;
   const fetchOptions = {
@@ -14,7 +15,11 @@ const makeApiCall = (options) => {
   };
 
   if (tokenId) {
-    fetchOptions.headers.set(AUTH_HEADER, tokenId);
+    fetchOptions.headers.set(AUTH_TOKEN_HEADER, tokenId);
+  }
+
+  if (linkCode) {
+    fetchOptions.headers.set(LINK_CODE_HEADER, linkCode);
   }
 
   if (content) {
@@ -63,12 +68,15 @@ export default store => next => action => {
   }
 
   const [ requestType, successType, failureType ] = types
-  next(actionWith({ type: requestType }))
 
+  // Look for auth values, if any.
+  const linkCode = store.getState().linkCode;
   const currentGoogleUser = store.getState().googleUser.current;
   const tokenId = currentGoogleUser && currentGoogleUser.tokenId;
 
-  return makeApiCall({endpoint, content, method, tokenId}).then(
+  next(actionWith({ type: requestType }))
+
+  return makeApiCall({endpoint, content, method, tokenId, linkCode}).then(
     response => next(actionWith({
       response,
       type: successType

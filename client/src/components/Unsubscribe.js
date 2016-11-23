@@ -9,16 +9,12 @@ class StaticUnsubscribe extends React.Component {
   }
 
   render() {
-    if (this.props.googleAccount) {
+    if (this.props.account.isLoading) {
       return <div>Unsubscribing...</div>;
-    } else if (this.props.errorMessage) {
-      return <div>{this.props.errorMessage || 'Unable to list email address.'}</div>
     } else {
       return (
         <div>
-          <div>
-            Successfully unsubscribed.
-          </div>
+          Successfully unsubscribed.
         </div>
       );
     }
@@ -26,6 +22,6 @@ class StaticUnsubscribe extends React.Component {
 }
 
 export default connect(
-  null,
+  (state) => { return {account: state.account}; },
   {startUnsubscribe: startUnsubscribe}
 )(StaticUnsubscribe);

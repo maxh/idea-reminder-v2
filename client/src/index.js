@@ -10,7 +10,7 @@ import api from './middleware/api.js';
 import './index.css';
 import { syncHistoryWithStore, routerMiddleware, routerReducer, push } from 'react-router-redux'
 import { browserHistory } from 'react-router';
-import { clearError, attemptAutoSignIn, ensureAuthLibLoaded, ensureAccountCreated } from './actions/index.js';
+import { clearError, attemptAutoSignIn, ensureAccountCreated } from './actions/index.js';
 
 
 const store = createStore(
@@ -45,9 +45,7 @@ const monitorSignInState = () => {
 }
 monitorSignInState();
 
-// Initialize authentication infrastructure.
-store.dispatch(ensureAuthLibLoaded());
-store.dispatch(attemptAutoSignIn());
+store.dispatch(attemptAutoSignIn())
 
 ReactDOM.render(
   <Provider store={store}>

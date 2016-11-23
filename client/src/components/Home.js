@@ -1,45 +1,6 @@
 import React from 'react';
-import { Button, Jumbotron } from 'react-bootstrap';
-import { connect } from 'react-redux';
-import { startSignIn } from '../actions/index';
-
-
-class SubscribeForm extends React.Component {
-
-  render() {
-    if (this.props.googleUser.isLoading || this.props.authLib.isLoading) {
-      return (
-        <div className="success">
-          Loading...
-        </div>
-      );
-    } else if (this.props.googleUser.current) {
-      return (
-        <div className="success">
-          <span className="glyphicon glyphicon-ok"></span>
-          Welcome, {this.props.googleUser.current.profileObj.name}.
-        </div>
-      );
-    } else {
-      return (
-        <Button onClick={this.props.startSignIn}>Sign in with Google</Button>
-      );     
-    }
-  }
-}
-
-const mapStateToProps = (state) => {
-  return {
-    user: state.user,
-    googleUser: state.googleUser,
-    authLib: state.authLib
-  };
-}
-
-const ActiveSubscribeForm = connect(
-  mapStateToProps,
-  {startSignIn: startSignIn}
-)(SubscribeForm);
+import { Jumbotron } from 'react-bootstrap';
+import { SignInButton } from './SignIn';
 
 
 const Home = () => {
@@ -48,7 +9,7 @@ const Home = () => {
 	    <Jumbotron>
 	      <h2>Encourage a daily creative spark.</h2>
         <div className="subscribe-container">
-	        <ActiveSubscribeForm />
+	        <SignInButton />
         </div>
 	    </Jumbotron>
 	    <div className="how">

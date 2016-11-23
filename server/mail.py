@@ -43,19 +43,20 @@ TEMPLATES.globals = {
 
 class SendReminders(webapp2.RequestHandler):
 
-  def get(self):
-    # Load the template in advance to avoid getting the template once for
-    # each user.
+  def get(self, time_of_day):
     template = TEMPLATES.get_template('reminder.html')
-    enabled = models.User.query(models.User.is_enabled == True)
-    active = enabled.filter(models.User.is_verified == True)
 
-    for user in active.fetch():
+    accounts = (models.Account
+        .query(models.Account.emails_enabled)
+        .query(models.Account.time_of_day == time_of_day)
+    )
+
+    for account in accounts.fetch():
       params = {
-        'list_link': auth.generate_link(user, 'list'),
-        'unsubscribe_link': auth.generate_link(user, 'unsubscribe'),
+        'list_link': config.URL + '/list',
+        'unsubscribe_link': auth.generate_link(account, 'unsubscribe'),
       }
-      send_email_from_template(user.email, template, params)
+      send_email_from_template(account.email, template, params)
 
 
 class HandleReply(webapp2.RequestHandler):
@@ -81,20 +82,24 @@ class HandleReply(webapp2.RequestHandler):
       self.abort(400, 'Expected JSON email description.')
 
     email = body.get('Sender')
-    user = models.User.query(models.User.email == email).get()
-    if user is None or not user.is_verified:
+    account = models.Account.query(models.Account.email == email).get()
+    if account is None or not account.is_verified:
       self.abort(400, 'Unrecognized email address: %s' % email)
 
+    account.last_response_date = datetime.now()
+    account.put()
+
     full_email_text = body.get('Text-part')
-    idea_text = extract_latest_message(full_email_text)
+    response_text = extract_latest_message(full_email_text)
 
-    idea = models.Idea(parent=user.key, text=idea_text, date=datetime.now())
-    idea.put()
-
+    response = models.Response(
+        parent=account.key,
+        text=response_text)
+    response.put()
 
 
 app = webapp2.WSGIApplication([
-    ('/mail/send-reminders', SendReminders),
+    ('/mail/send-reminders/<time_of_day:[\w]*>', SendReminders),
     ('/mail/receive', HandleReply),
 ], debug=config.DEBUG)
 
@@ -111,13 +116,13 @@ def extract_latest_message(full_email_text):
   return latest_message.rstrip()
 
 
-def send_email_from_template(user_email, template, params={}):
+def send_email_from_template(email_address, template, params={}):
   # "template" can be a string or an actual Jinja template.
   if isinstance(template, basestring):
     template = TEMPLATES.get_template(template + '.html')
   html_body = template.render(format='html', **params)
   body = template.render(**params)
-  send_email(user_email, template.module.subject, body, html_body)
+  send_email(email_address, template.module.subject, body, html_body)
 
 
 def send_email(address, subject, text_part, html_part):
