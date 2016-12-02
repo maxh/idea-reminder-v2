@@ -33,7 +33,11 @@ export function requireAuth(Component, acceptLink=false) {
     }
 
     isAuthLoading(props) {
-      return props.authLib.isLoading || props.account.isLoading;
+      return (
+          props.authLib.isLoading ||
+          props.account.isLoading ||
+          props.googleUser.isLoading
+      );
     }
 
     hasValidAuth(props) {

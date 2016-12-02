@@ -36,7 +36,7 @@ const App = (props) => {
         <Route path="/sign-in" component={SignIn} />
         <Route path="/list" component={requireAuth(List)} />
         <Route path="/settings" component={requireAuth(Settings)} />
-        <Route path="/Unsubscribe" component={requireAuth(Unsubscribe, true)} />
+        <Route path="/unsubscribe" component={requireAuth(Unsubscribe, true)} />
         <Route path='/404' component={NotFound} />
         <Redirect from='*' to='/404' />
       </Route>

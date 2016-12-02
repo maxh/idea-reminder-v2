@@ -79,9 +79,12 @@ const withAuth = (dispatch, func) => {
 
 export const attemptAutoSignIn = () => {
   return dispatch => {
+    dispatch({type: 'GOOGLE_SIGN_IN_REQUEST'});
     return withAuth(dispatch, auth => {
       if (auth.isSignedIn.get()) {
         return dispatch(finishSignIn(auth.currentUser.get()));
+      } else {
+        dispatch({type: 'GOOGLE_SIGN_OUT_SUCCESS'});
       }
     });
   };

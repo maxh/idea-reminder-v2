@@ -52,7 +52,6 @@ class AppBar extends React.Component {
               <LinkContainer to="/donate">
                 <NavItem>Donate</NavItem>
               </LinkContainer>
-              {ready && <NavItem onClick={this.props.startSignIn} disabled={userLoading}>Sign in</NavItem>}
             </Nav>
           }
 

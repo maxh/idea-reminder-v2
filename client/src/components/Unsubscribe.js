@@ -22,6 +22,6 @@ class StaticUnsubscribe extends React.Component {
 }
 
 export default connect(
-  (state) => { return {account: state.account}; },
+  (state) => ({account: state.account}),
   {startUnsubscribe: startUnsubscribe}
 )(StaticUnsubscribe);
