@@ -34,20 +34,17 @@ class AppBar extends React.Component {
 
           {signedIn &&
             <Nav pullRight>
-              <LinkContainer to="/settings">
-                <NavItem>Settings</NavItem>
-              </LinkContainer>
-              <LinkContainer to="/list">
+              <LinkContainer to="/responses">
                 <NavItem>Responses</NavItem>
               </LinkContainer>
-              <LinkContainer to="/donate">
-                <NavItem>Donate</NavItem>
+              <LinkContainer to="/settings">
+                <NavItem>Settings</NavItem>
               </LinkContainer>
               <NavItem onClick={this.props.startSignOut}>Sign out</NavItem>
             </Nav>
           }
 
-          {!signedIn &&
+          {!signedIn && false &&
             <Nav pullRight>
               <LinkContainer to="/donate">
                 <NavItem>Donate</NavItem>

@@ -75,17 +75,17 @@ class Unsubscribe(api_base.BaseHandler):
 class Responses(api_base.BaseHandler):
   """RESTful endpoint for listing ideas."""
 
-  # @auth.require_account
-  # def get(self, account):
-  #   ideas = models.Idea.query(ancestor=account.key).fetch()
-  #   idea_dicts = [idea.to_dict() for idea in ideas]
-  #   self.response.write(json.dumps({'ideas': idea_dicts}, default=api_base.serializer))
-  #   self.response.headers['Content-Type'] = 'application/json'
-
   @auth.require_account
   def get(self, account):
-    self.response.write('{"ideas": [{"date": "2016-11-16T17:02:10.340130", "text": "lovely"}, {"date": "2016-11-16T17:02:09.356260", "text": "and again"}, {"date": "2016-11-16T17:02:06.363380", "text": "this time."}, {"date": "2016-11-16T17:02:03.339190", "text": "Testing another time."}, {"date": "2016-11-16T16:59:59.232290", "text": "This is an idea!"}, {"date": "2016-11-16T17:02:08.313220", "text": "ok"}, {"date": "2016-11-16T17:02:04.363750", "text": "Making progress!"}, {"date": "2016-11-16T16:45:58.841040", "text": "Now you should work!"}, {"date": "2016-11-16T17:02:07.381850", "text": "yea!"}, {"date": "2016-11-16T17:02:03.435110", "text": "Testing another time again."}, {"date": "2016-11-16T17:02:01.633100", "text": "Testing again!"}, {"date": "2016-11-16T17:02:11.349070", "text": "yep"}, {"date": "2016-11-16T17:02:05.315310", "text": "Test."}]}')
+    ideas = models.Idea.query(ancestor=account.key).fetch()
+    idea_dicts = [idea.to_dict() for idea in ideas]
+    self.response.write(json.dumps({'ideas': idea_dicts}, default=api_base.serializer))
     self.response.headers['Content-Type'] = 'application/json'
+
+  # @auth.require_account
+  # def get(self, account):
+  #   self.response.write('{"ideas": [{"date": "2016-11-16T17:02:10.340130", "text": "lovely"}, {"date": "2016-11-16T17:02:09.356260", "text": "and again"}, {"date": "2016-11-16T17:02:06.363380", "text": "this time."}, {"date": "2016-11-16T17:02:03.339190", "text": "Testing another time."}, {"date": "2016-11-16T16:59:59.232290", "text": "This is an idea!"}, {"date": "2016-11-16T17:02:08.313220", "text": "ok"}, {"date": "2016-11-16T17:02:04.363750", "text": "Making progress!"}, {"date": "2016-11-16T16:45:58.841040", "text": "Now you should work!"}, {"date": "2016-11-16T17:02:07.381850", "text": "yea!"}, {"date": "2016-11-16T17:02:03.435110", "text": "Testing another time again."}, {"date": "2016-11-16T17:02:01.633100", "text": "Testing again!"}, {"date": "2016-11-16T17:02:11.349070", "text": "yep"}, {"date": "2016-11-16T17:02:05.315310", "text": "Test."}]}')
+  #   self.response.headers['Content-Type'] = 'application/json'
 
 
 # Add PATCH support to webapp2.

@@ -25,7 +25,7 @@ const Home = () => {
 					</div>
 					<div>
 					  <h3>3</h3>
-					  Your replies will be stored in a Google Spreadsheet visible only to you.
+					  Your replies will be saved and visible only to you.
 					 </div>
 		    </div>
 	    </div>

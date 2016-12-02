@@ -8,6 +8,11 @@ class StaticList extends React.Component {
     this.props.startList()
   }
 
+
+  render2() {
+    return <div>hi</div>;
+  }
+
   render() {
     var message;
     if (this.props.isLoading) {

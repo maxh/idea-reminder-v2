@@ -179,13 +179,11 @@ export const IDEAS_SUCCESS = 'IDEAS_SUCCESS'
 
 export const startList = () => {
   return (dispatch, getState) => {
-    return dispatch(attemptAutoSignIn()).then(() => {
-      return dispatch({
-        [CALL_API]: {
-          endpoint: `/responses`,
-          types: [IDEAS_REQUEST, IDEAS_SUCCESS, IDEAS_FAILURE],
-        }
-      });
+    return dispatch({
+      [CALL_API]: {
+        endpoint: `/responses`,
+        types: [IDEAS_REQUEST, IDEAS_SUCCESS, IDEAS_FAILURE],
+      }
     });
   }  
 }

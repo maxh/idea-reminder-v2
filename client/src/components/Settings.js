@@ -61,7 +61,7 @@ class Settings extends React.Component {
           </FormControl>
         </FormGroup>
         <Button bsStyle="primary" onClick={this.saveChanges} disabled={this.isSaveDisabled()}>
-          Save changes
+          Save
         </Button>
 
       </form>

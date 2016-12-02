@@ -5,7 +5,7 @@ import { IndexRoute, Redirect, Router, Route } from 'react-router';
 import AppBar from './AppBar';
 import Donate from './Donate';
 import Home from './Home';
-import List from './List';
+import Responses from './Responses';
 import Settings from './Settings';
 import SignIn from './SignIn';
 import Unsubscribe from './Unsubscribe';
@@ -34,7 +34,7 @@ const App = (props) => {
         <IndexRoute component={Home} />
         <Route path="/donate" component={Donate} />
         <Route path="/sign-in" component={SignIn} />
-        <Route path="/list" component={requireAuth(List)} />
+        <Route path="/responses" component={requireAuth(Responses)} />
         <Route path="/settings" component={requireAuth(Settings)} />
         <Route path="/unsubscribe" component={requireAuth(Unsubscribe, true)} />
         <Route path='/404' component={NotFound} />
