@@ -3,3 +3,4 @@ requests-toolbelt==0.7.0
 mailjet-rest==v1.2.2
 webtest==2.0.23
 oauth2client==3.0.0
+PyJWT==1.4.2

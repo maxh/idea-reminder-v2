@@ -2,6 +2,7 @@
 
 import datetime
 import json
+import math
 import webapp2
 
 from validate_email import validate_email
@@ -36,7 +37,6 @@ class Account(api_base.BaseHandler):
       except Exception:
         self.abort(500, 'Unable to create account.')
 
-
     self.respond(account)
 
 
@@ -60,16 +60,12 @@ class Account(api_base.BaseHandler):
 
 class Unsubscribe(api_base.BaseHandler):
 
+  @auth.require_link
   def post(self, account):
-    body = json.loads(self.request.body)
-
-    if 'emailsEnabled' in body:
-      account.emails_enabled = body.get('emailsEnabled')
-    if 'timeOfDay' in body:
-      account.time_of_day = body.get('timeOfDay')
+    account.emails_enabed = False
     account.put()
-
-    self.respond(account)
+    self.response.write(json.dumps({}))
+    self.response.headers['Content-Type'] = 'application/json'
 
 
 class Responses(api_base.BaseHandler):
@@ -77,14 +73,49 @@ class Responses(api_base.BaseHandler):
 
   @auth.require_account
   def get(self, account):
-    ideas = models.Idea.query(ancestor=account.key).fetch()
-    idea_dicts = [idea.to_dict() for idea in ideas]
-    self.response.write(json.dumps({'ideas': idea_dicts}, default=api_base.serializer))
-    self.response.headers['Content-Type'] = 'application/json'
+    page = int(self.request.get('page', default_value=0))
+
+    limit = 25
+    offset = (page - 1) * limit
+    count = models.Response.query(ancestor=account.key).count()
+    max_page = math.ceil(count / limit) + 1
+
+    ideas = (models.Response
+        .query(ancestor=account.key)
+        .order(-models.Response.date))
+
+    if 'csv' == self.request.get('format'):
+      ideas = ideas.fetch()  # Fetch all ideas for CSV.
+    else:
+      ideas = ideas.fetch(offset=offset, limit=limit)
+
+    # Format the ideas.
+    formatted_ideas = []
+    for idea in ideas:
+      date_str = idea.date.isoformat().split('T')[0]
+      formatted_ideas.append({'date': date_str, 'text': idea.text})
+
+    if 'csv' == self.request.get('format'):
+      rows = ['"date","idea"']
+      for formatted in formatted_ideas: 
+        rows.append('"%s","%s"' % (formatted['date'], formatted['text']))
+      response = '\n'.join(rows)
+      self.response.headers['Content-Type'] = 'text/csv'
+    else:
+      links = {}
+      links['last'] = '%s/api/responses?&page=%s' % (config.URL, max_page)
+      response = json.dumps({
+        'ideas': formatted_ideas,
+        'links': links
+      })
+      self.response.headers['Content-Type'] = 'application/json'
+
+    self.response.write(response)    
+
 
   # @auth.require_account
   # def get(self, account):
-  #   self.response.write('{"ideas": [{"date": "2016-11-16T17:02:10.340130", "text": "lovely"}, {"date": "2016-11-16T17:02:09.356260", "text": "and again"}, {"date": "2016-11-16T17:02:06.363380", "text": "this time."}, {"date": "2016-11-16T17:02:03.339190", "text": "Testing another time."}, {"date": "2016-11-16T16:59:59.232290", "text": "This is an idea!"}, {"date": "2016-11-16T17:02:08.313220", "text": "ok"}, {"date": "2016-11-16T17:02:04.363750", "text": "Making progress!"}, {"date": "2016-11-16T16:45:58.841040", "text": "Now you should work!"}, {"date": "2016-11-16T17:02:07.381850", "text": "yea!"}, {"date": "2016-11-16T17:02:03.435110", "text": "Testing another time again."}, {"date": "2016-11-16T17:02:01.633100", "text": "Testing again!"}, {"date": "2016-11-16T17:02:11.349070", "text": "yep"}, {"date": "2016-11-16T17:02:05.315310", "text": "Test."}]}')
+  #   self.response.write('{"ideas": [{"date": "2016-11-16T17:02:10.340130", "text": "lovely"}, {"date": "2016-11-16T17:02:09.356260", "text": "and aasdfasdfasdfasdfasdfasdfasdfasdgainaasdfasdfasdfasdfasdfasdfasdfasdgainaasdfasdfasdfasdfasdfasdfasdfasdgainaasdfasdfasdfasdfasdfasdfasdfasdgain"}, {"date": "2016-11-16T17:02:06.363380", "text": "this time."}, {"date": "2016-11-16T17:02:03.339190", "text": "Testing another time aasdfasdfasdfasdfasdfasdfasdfasdgain aasdfasdfasdfasdfasdfasdfasdfasdgain aasdfasdfasdfasdfasdfasdfasdfasdgain aasdfasdfasdfasdfasdfasdfasdfasdgain aasdfasdfasdfasdfasdfasdfasdfasdgain aasdfasdfasdfasdfasdfasdfasdfasdgain aasdfasdfasdfasdfasdfasdfasdfasdgain aasdfasdfasdfasdfasdfasdfasdfasdgain."}, {"date": "2016-11-16T16:59:59.232290", "text": "This is an idea!"}, {"date": "2016-11-16T17:02:08.313220", "text": "ok"}, {"date": "2016-11-16T17:02:04.363750", "text": "Making progress!"}, {"date": "2016-11-16T16:45:58.841040", "text": "Now you should work!"}, {"date": "2016-11-16T17:02:07.381850", "text": "yea!"}, {"date": "2016-11-16T17:02:03.435110", "text": "Testing another time again."}, {"date": "2016-11-16T17:02:01.633100", "text": "Testing again!"}, {"date": "2016-11-16T17:02:11.349070", "text": "yep"}, {"date": "2016-11-16T17:02:05.315310", "text": "Test."}]}')
   #   self.response.headers['Content-Type'] = 'application/json'
 
 

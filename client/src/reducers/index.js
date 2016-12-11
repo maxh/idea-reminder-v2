@@ -37,7 +37,8 @@ function googleUser(state = {isLoading: false}, action) {
     case 'GOOGLE_SIGN_IN_REQUEST':
     case 'GOOGLE_SIGN_OUT_REQUEST':
       return {
-        isLoading: true
+        isLoading: true,
+        error: undefined
       };
     case 'GOOGLE_SIGN_IN_SUCCESS':
       return {
@@ -47,7 +48,7 @@ function googleUser(state = {isLoading: false}, action) {
     case 'GOOGLE_SIGN_OUT_SUCCESS':
       return {
         isLoading: false,
-        current: null
+        current: undefined
       };
     case 'GOOGLE_SIGN_IN_FAILURE':
     case 'GOOGLE_SIGN_OUT_FAILURE':
@@ -65,7 +66,8 @@ function account(state = {isLoading: false}, action) {
     case ActionTypes.ACCOUNT_REQUEST:
       return {
         ...state,
-        isLoading: true
+        isLoading: true,
+        error: undefined
       };
     case ActionTypes.ACCOUNT_SUCCESS:
       return {
@@ -76,20 +78,34 @@ function account(state = {isLoading: false}, action) {
     case ActionTypes.ACCOUNT_FAILURE:
       return {
         ...state,
-        isLoading: false
+        isLoading: false,
+        error: action.error
       };
     default:
       return state;
   }
 }
 
-function error(state = '', action) {
+function unsubscribe(state = {isLoading: false}, action) {
   switch (action.type) {
-    case ActionTypes.ACCOUNT_FAILURE:
-    case ActionTypes.IDEAS_FAILURE:
-      return action.errorMessage;
-    case ActionTypes.CLEAR_ERROR:
-      return '';
+    case 'UNSUBSCRIBE_REQUEST':
+      return {
+        ...state,
+        isLoading: true,
+        error: undefined
+      };
+    case 'UNSUBSCRIBE_SUCCESS':
+      return {
+        ...state,
+        isLoading: false,
+        isSuccess: true
+      };
+    case 'UNSUBSCRIBE_FAILURE':
+      return {
+        ...state,
+        isLoading: false,
+        error: action.error
+      };
     default:
       return state;
   }
@@ -98,21 +114,28 @@ function error(state = '', action) {
 function ideas(state = {}, action) {
   switch (action.type) {
     case ActionTypes.IDEAS_REQUEST:
+      const endpoint = action.endpoint;
+      const split = endpoint && endpoint.split('=');
+      let page = split && split[1];
+      page = page ? parseInt(page) : 1;
       return {
         ...state,
-        isLoading: true
+        isLoading: true,
+        currentPage: page,
+        error: undefined
       };
     case ActionTypes.IDEAS_SUCCESS:
       return {
         ...state,
         isLoading: false,
-        ideas: action.response.ideas
+        ideas: action.response.ideas,
+        links: action.response.links
       };
     case ActionTypes.IDEAS_FAILURE:
       return {
         ...state,
         isLoading: false,
-        errorMessage: action.errorMessage
+        error: action.error
       };
     default:
       return state;
@@ -120,10 +143,10 @@ function ideas(state = {}, action) {
 }
 
 export default {
-  error,
   account,
   authLib,
   linkCode,
   ideas,
-  googleUser
+  googleUser,
+  unsubscribe
 };

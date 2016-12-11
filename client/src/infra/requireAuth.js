@@ -2,7 +2,7 @@ import React from 'react';
 import {connect} from 'react-redux';  
 import { push } from 'react-router-redux'
 
-export function requireAuth(Component, acceptLink=false) {
+export function requireAuth(Component) {
 
   class AuthenticatedComponent extends React.Component {
 
@@ -41,9 +41,7 @@ export function requireAuth(Component, acceptLink=false) {
     }
 
     hasValidAuth(props) {
-      const hasAccount = props.googleUser.current && props.account.current;
-      const hasAcceptableLink = acceptLink && props.location.query.linkCode;
-      return hasAccount || hasAcceptableLink;
+      return props.googleUser.current && props.account.current;
     }
   }
 

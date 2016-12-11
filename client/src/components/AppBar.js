@@ -49,6 +49,7 @@ class AppBar extends React.Component {
               <LinkContainer to="/donate">
                 <NavItem>Donate</NavItem>
               </LinkContainer>
+              <NavItem onClick={this.props.startSignIn}>Sign in</NavItem>
             </Nav>
           }
 

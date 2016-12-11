@@ -4,13 +4,16 @@ import { startUnsubscribe } from '../actions/index.js';
 
 
 class StaticUnsubscribe extends React.Component {
-  componentDidMount() {
+  constructor(props) {
+    super(props);
     this.props.startUnsubscribe();
   }
 
   render() {
-    if (this.props.account.isLoading) {
+    if (this.props.unsubscribe.isLoading) {
       return <div>Unsubscribing...</div>;
+    } else if (this.props.unsubscribe.error) {
+      return <div>{this.props.unsubscribe.error}</div>;
     } else {
       return (
         <div>
@@ -22,6 +25,6 @@ class StaticUnsubscribe extends React.Component {
 }
 
 export default connect(
-  (state) => ({account: state.account}),
+  (state) => ({unsubscribe: state.unsubscribe}),
   {startUnsubscribe: startUnsubscribe}
 )(StaticUnsubscribe);

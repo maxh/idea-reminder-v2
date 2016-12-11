@@ -34,9 +34,9 @@ const App = (props) => {
         <IndexRoute component={Home} />
         <Route path="/donate" component={Donate} />
         <Route path="/sign-in" component={SignIn} />
+        <Route path="/unsubscribe" component={Unsubscribe} />
         <Route path="/responses" component={requireAuth(Responses)} />
         <Route path="/settings" component={requireAuth(Settings)} />
-        <Route path="/unsubscribe" component={requireAuth(Unsubscribe, true)} />
         <Route path='/404' component={NotFound} />
         <Redirect from='*' to='/404' />
       </Route>

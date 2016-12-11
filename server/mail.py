@@ -46,14 +46,14 @@ class SendReminders(webapp2.RequestHandler):
   def get(self, time_of_day):
     template = TEMPLATES.get_template('reminder.html')
 
-    accounts = (models.Account
-        .query(models.Account.emails_enabled)
-        .query(models.Account.time_of_day == time_of_day)
+    accounts = (models.Account.query()
+        .filter(models.Account.emails_enabled == True)
+        .filter(models.Account.time_of_day == time_of_day)
     )
 
     for account in accounts.fetch():
       params = {
-        'list_link': config.URL + '/list',
+        'responses_link': config.URL + '/responses',
         'unsubscribe_link': auth.generate_link(account, 'unsubscribe'),
       }
       send_email_from_template(account.email, template, params)
@@ -83,7 +83,7 @@ class HandleReply(webapp2.RequestHandler):
 
     email = body.get('Sender')
     account = models.Account.query(models.Account.email == email).get()
-    if account is None or not account.is_verified:
+    if account is None:
       self.abort(400, 'Unrecognized email address: %s' % email)
 
     account.last_response_date = datetime.now()
@@ -99,7 +99,7 @@ class HandleReply(webapp2.RequestHandler):
 
 
 app = webapp2.WSGIApplication([
-    ('/mail/send-reminders/<time_of_day:[\w]*>', SendReminders),
+    webapp2.Route('/mail/send-reminders/<time_of_day:[\w]*>', SendReminders),
     ('/mail/receive', HandleReply),
 ], debug=config.DEBUG)
 

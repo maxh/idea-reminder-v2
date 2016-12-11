@@ -27,14 +27,20 @@ class Settings extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    this.setState({
-      emailsEnabled: nextProps.current.emailsEnabled,
-      timeOfDay: nextProps.current.timeOfDay
-    });
+    if (!nextProps.isLoading) {
+      const currentAccount = nextProps.current;
+      this.setState({
+        emailsEnabled: currentAccount.emailsEnabled,
+        timeOfDay: currentAccount.timeOfDay
+      });
+    }
   }
 
   render() {
     const account = this.state;
+    if (this.props.isLoading && !Object.getOwnPropertyNames(account).length) {
+      return false;
+    }
     return (
       <form className="content">
         <FormGroup controlId="reminder-enabled">
@@ -63,7 +69,6 @@ class Settings extends React.Component {
         <Button bsStyle="primary" onClick={this.saveChanges} disabled={this.isSaveDisabled()}>
           Save
         </Button>
-
       </form>
     );
   }

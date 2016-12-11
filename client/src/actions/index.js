@@ -151,25 +151,13 @@ export const loadAccount = () => {
 }
 
 export const startUnsubscribe = () => {
-  return updateAccount({isEnabled: false});
-}
-
-
-export const SET_AUTH = 'SET_AUTH'
-
-export const setAuth = (userId, linkCode) => {
   return {
-    type: SET_AUTH,
-    userId: userId,
-    linkCode: linkCode
-  }
-}
-
-
-export const CLEAR_ERROR = 'CLEAR_ERROR'
-
-export const clearError = () => {
-  return {type: CLEAR_ERROR}
+    [CALL_API]: {
+      endpoint: `/unsubscribe`,
+      types: ['UNSUBSCRIBE_REQUEST', 'UNSUBSCRIBE_SUCCESS', 'UNSUBSCRIBE_FAILURE'],
+      method: 'POST'
+    }
+  };
 }
 
 
@@ -177,11 +165,11 @@ export const IDEAS_REQUEST = 'IDEAS_REQUEST'
 export const IDEAS_FAILURE = 'IDEAS_FAILURE'
 export const IDEAS_SUCCESS = 'IDEAS_SUCCESS'
 
-export const startList = () => {
+export const startList = (page=1) => {
   return (dispatch, getState) => {
     return dispatch({
       [CALL_API]: {
-        endpoint: `/responses`,
+        endpoint: `/responses?page=${page}`,
         types: [IDEAS_REQUEST, IDEAS_SUCCESS, IDEAS_FAILURE],
       }
     });

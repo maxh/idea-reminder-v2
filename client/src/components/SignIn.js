@@ -25,8 +25,10 @@ class SignInButtonBase extends React.Component {
       return (
         <Button
             onClick={this.props.startSignIn}
+            className="sign-in-button"
             disabled={this.props.googleUser.isLoading}>
-          Sign in with Google
+          <img style={{'verticalAlign': 'middle', 'marginTop': '-1px', 'marginRight': '6px'}} alt="Google" src="/static/g-logo.svg" />
+          <span>Sign up with Google</span>
         </Button>
       )
     }

@@ -2,7 +2,7 @@ import { camelizeKeys } from 'humps'
 
 const API_ROOT = '/api';
 
-const AUTH_TOKEN_HEADER = 'X-Google-Auth-Token-ID';
+const AUTH_TOKEN_HEADER = 'X-IdeaReminder-Auth-Token-ID';
 const LINK_CODE_HEADER = 'X-IdeaReminder-LinkCode';
 
 const makeApiCall = (options) => {
@@ -74,7 +74,7 @@ export default store => next => action => {
   const currentGoogleUser = store.getState().googleUser.current;
   const tokenId = currentGoogleUser && currentGoogleUser.tokenId;
 
-  next(actionWith({ type: requestType }))
+  next(actionWith({ type: requestType, endpoint: endpoint }))
 
   return makeApiCall({endpoint, content, method, tokenId, linkCode}).then(
     response => next(actionWith({
@@ -84,7 +84,7 @@ export default store => next => action => {
     error => next(actionWith({
       type: failureType,
       page: page,
-      errorMessage: error.message || 'Unknown server error.'
+      error: error.message || 'Unknown server error.'
     }))
   )
 }
