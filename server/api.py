@@ -73,12 +73,12 @@ class Responses(api_base.BaseHandler):
 
   @auth.require_account
   def get(self, account):
-    page = int(self.request.get('page', default_value=0))
+    page = int(self.request.get('page', default_value=1))
 
     limit = 25
     offset = (page - 1) * limit
     count = models.Response.query(ancestor=account.key).count()
-    max_page = math.ceil(count / limit) + 1
+    max_page = int(math.ceil(count / limit) + 1)
 
     ideas = (models.Response
         .query(ancestor=account.key)

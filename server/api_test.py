@@ -45,10 +45,9 @@ class ApiTestCase(unittest.TestCase):
   def test_pagination(self):
 
     resp = self.app.get('/api/responses')
-
-    self.assertEqual(resp.headers['Link'], (
-        '<idea-reminder-two.appspot.com/api/responses?&limit=25&offset=25>; rel="next",'
-        '<idea-reminder-two.appspot.com/api/responses?&limit=25&offset=75>; rel="last"'))
+    results = json.loads(resp.body)
+    self.assertEqual(results['links']['last'], (
+        'idea-reminder-two.appspot.com/api/responses?&page=4'))
 
   def test_csv(self):
 
