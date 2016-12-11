@@ -12,9 +12,9 @@ import mail
 import models
 import secrets
 
-EXAMPLE_TEXT_PART = '''The greatest idea!!
+EXAMPLE_TEXT_PART = '''The greatest response!!
 
-On Sun, Nov 13, 2016 at 4:39 PM, Idea Reminder <mail@ideareminder.org>
+On Sun, Nov 13, 2016 at 4:39 PM, Response Reminder <mail@responsereminder.org>
 wrote:
 
 > Something something.
@@ -45,7 +45,7 @@ class ReceiveTestCase(unittest.TestCase):
 
   def test_receive_bad_auth(self):
     bad_auth_app = webtest.TestApp(mail.app)
-    bad_auth_app.authorization = ('Basic', ('fakeUser', 'fakePassword'))
+    bad_auth_app.authorization = ('Basic', ('fakeAccount', 'fakePassword'))
     response = bad_auth_app.post('/mail/receive', expect_errors=True)
     self.assertEqual(response.status_int, 401)
 
@@ -60,39 +60,30 @@ class ReceiveTestCase(unittest.TestCase):
     }), expect_errors=True)
     self.assertEqual(response.status_int, 400)
 
-  def test_unverified_sender(self):
-    email = 'user@example.com'
-    models.User(email=email).put()
-    response = self.testapp.post('/mail/receive', json.dumps({
-      'Text-part': 'foo',
-      'Sender': email,
-    }), expect_errors=True)
-    self.assertEqual(response.status_int, 400)
-
   def test_verified_sender(self):
-    email = 'user@example.com'
-    user = models.User(email=email, is_verified=True)
-    user.put()
+    email = 'account@example.com'
+    account = models.Account(email=email)
+    account.put()
     response = self.testapp.post('/mail/receive', json.dumps({
       'Text-part': 'foo',
       'Sender': email,
     }))
     self.assertEqual(response.status_int, 200)
-    idea = models.Idea.query(ancestor=user.key).get()
-    self.assertEqual(idea.text, 'foo')
+    response = models.Response.query(ancestor=account.key).get()
+    self.assertEqual(response.text, 'foo')
 
   def test_extract_latest_message(self):
     latest = mail.extract_latest_message(EXAMPLE_TEXT_PART)
-    self.assertEqual(latest, 'The greatest idea!!')
+    self.assertEqual(latest, 'The greatest response!!')
 
   def test_everything(self):
-    email = 'user@example.com'
-    user = models.User(email=email, is_verified=True)
-    user.put()
+    email = 'account@example.com'
+    account = models.Account(email=email)
+    account.put()
     response = self.testapp.post('/mail/receive', json.dumps({
       'Text-part': EXAMPLE_TEXT_PART,
       'Sender': email,
     }))
     self.assertEqual(response.status_int, 200)
-    idea = models.Idea.query(ancestor=user.key).get()
-    self.assertEqual(idea.text, 'The greatest idea!!')
+    response = models.Response.query(ancestor=account.key).get()
+    self.assertEqual(response.text, 'The greatest response!!')

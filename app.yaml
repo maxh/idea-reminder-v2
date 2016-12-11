@@ -2,35 +2,47 @@ runtime: python27
 api_version: 1
 threadsafe: true
 
+builtins:
+- remote_api: on
+
 libraries:
 - name: jinja2
   version: latest
+- name: pycrypto
+  version: "2.6"
 
 handlers:
 - url: /api/.*
   script: server.api.app
+  secure: always
 
-- url: /mail/send-reminders
+- url: /mail/send-reminders/.*
   script: server.mail.app
   login: admin
+  secure: always
 
 - url: /mail/receive
   script: server.mail.app
+  secure: always
 
 - url: /favicon\.ico
   static_files: client/build/favicon.ico
   upload: client/build/favicon\.ico
+  secure: always
 
 - url: /asset-manifest\.json
   static_files: client/build/asset-manifest.json
   upload: client/build/asset-manifest\.json
+  secure: always
 
 - url: /static
   static_dir: client/build/static
+  secure: always
 
 - url: /.*
   static_files: client/build/index.html
   upload: client/build/index\.html
+  secure: always
 
 skip_files:
 - ^(.*/)?#.*#$

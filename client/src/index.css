@@ -13,7 +13,7 @@ body {
 }
 
 @media (min-width: 768px) {
-	.navbar-default {
+	.\/ .navbar-default {
 	  background-color: transparent;
 	  border-color: transparent;
 	}
@@ -21,9 +21,14 @@ body {
 
 .content-container {
   padding-top: 100px;
-  padding-bottom: 100px;
+  padding-bottom: 150px;
   padding-right: 10%;
   padding-left: 10%;
+}
+
+.error {
+  color: red;
+  font-style: italic;
 }
 
 /* App bar */
@@ -126,6 +131,20 @@ li.settings {
 
 .\/ .glyphicon-ok {
   padding-right: 6px;
+}
+
+/* Sign in */
+
+.\/sign-in .content {
+  text-align: center;
+}
+
+.\/sign-in .explanation {
+  margin-bottom: 8px;
+}
+
+.\/settings .content {
+  width: 200px;
 }
 
 /* Ideas */

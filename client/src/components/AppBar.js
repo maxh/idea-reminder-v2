@@ -1,8 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { IndexLink } from 'react-router';
-import { Nav, Navbar, NavItem, MenuItem, NavDropdown } from 'react-bootstrap';
+import { Nav, Navbar, NavItem } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
+
+import { startSignOut, startSignIn } from '../actions/index';
 
 
 class AppBar extends React.Component {
@@ -13,6 +15,11 @@ class AppBar extends React.Component {
   }
 
   render() {
+    const signedIn = Boolean(this.props.googleUser.current);
+    const libLoading = this.props.authLib.isLoading;
+    const userLoading = this.props.googleUser.isLoading;
+    const error = this.props.authLib.error;
+    const ready = !(signedIn || libLoading || error);
     return (
       <Navbar fixedTop={true} collapseOnSelect={true}
               expanded={this.state.expanded}
@@ -24,23 +31,28 @@ class AppBar extends React.Component {
           <Navbar.Toggle />
         </Navbar.Header>
         <Navbar.Collapse>
-          <Nav pullRight>
-            <LinkContainer to="/donate">
-              <NavItem>Donate</NavItem>
-            </LinkContainer>
-            <NavDropdown eventKey={3} title="maxheinritz@gmail.com" id="basic-nav-dropdown">
+
+          {signedIn &&
+            <Nav pullRight>
+              <LinkContainer to="/responses">
+                <NavItem>Responses</NavItem>
+              </LinkContainer>
               <LinkContainer to="/settings">
-                <MenuItem>Settings</MenuItem>
+                <NavItem>Settings</NavItem>
               </LinkContainer>
-              <LinkContainer to="/account">
-                <MenuItem>Add password</MenuItem>
+              <NavItem onClick={this.props.startSignOut}>Sign out</NavItem>
+            </Nav>
+          }
+
+          {!signedIn && false &&
+            <Nav pullRight>
+              <LinkContainer to="/donate">
+                <NavItem>Donate</NavItem>
               </LinkContainer>
-              <MenuItem divider />
-              <LinkContainer to="/logout">
-                <MenuItem>Logout</MenuItem>
-              </LinkContainer>
-          </NavDropdown>
-          </Nav>
+              <NavItem onClick={this.props.startSignIn}>Sign in</NavItem>
+            </Nav>
+          }
+
         </Navbar.Collapse>
       </Navbar>
     );
@@ -54,5 +66,13 @@ class AppBar extends React.Component {
 
 // For context on {pure: false}, see:
 // github.com/react-bootstrap/react-router-bootstrap/issues/152
-export default connect(null, null, null, {pure: false})(AppBar);
+export default connect((state) => {
+  return {
+    googleUser: state.googleUser,
+    authLib: state.authLib
+  }
+}, {
+  startSignIn: startSignIn,
+  startSignOut: startSignOut
+}, null, {pure: false})(AppBar);
 

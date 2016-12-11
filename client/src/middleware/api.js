@@ -1,15 +1,22 @@
+import { camelizeKeys } from 'humps'
+
 const API_ROOT = '/api';
 
+const AUTH_TOKEN_HEADER = 'X-IdeaReminder-Auth-Token-ID';
 const LINK_CODE_HEADER = 'X-IdeaReminder-LinkCode';
 
 const makeApiCall = (options) => {
-  const {endpoint, content, method, linkCode} = options;
+  const {endpoint, content, method, tokenId, linkCode} = options;
 
   const path = API_ROOT + endpoint;
   const fetchOptions = {
     method: method || 'GET',
     headers: new Headers()
   };
+
+  if (tokenId) {
+    fetchOptions.headers.set(AUTH_TOKEN_HEADER, tokenId);
+  }
 
   if (linkCode) {
     fetchOptions.headers.set(LINK_CODE_HEADER, linkCode);
@@ -26,7 +33,8 @@ const makeApiCall = (options) => {
         if (!response.ok) {
           return Promise.reject(json)
         }
-        return Object.assign({}, json);
+        const camelizedJson = camelizeKeys(json)
+        return Object.assign({}, camelizedJson);
       })
     )
 }
@@ -60,11 +68,15 @@ export default store => next => action => {
   }
 
   const [ requestType, successType, failureType ] = types
-  next(actionWith({ type: requestType }))
 
+  // Look for auth values, if any.
   const linkCode = store.getState().linkCode;
+  const currentGoogleUser = store.getState().googleUser.current;
+  const tokenId = currentGoogleUser && currentGoogleUser.tokenId;
 
-  return makeApiCall({endpoint, content, method, linkCode}).then(
+  next(actionWith({ type: requestType, endpoint: endpoint }))
+
+  return makeApiCall({endpoint, content, method, tokenId, linkCode}).then(
     response => next(actionWith({
       response,
       type: successType
@@ -72,7 +84,7 @@ export default store => next => action => {
     error => next(actionWith({
       type: failureType,
       page: page,
-      errorMessage: error.message || 'Unknown server error.'
+      error: error.message || 'Unknown server error.'
     }))
   )
 }
