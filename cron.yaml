@@ -1,10 +1,15 @@
 cron:
-- description: daily reminder job
+- description: daily evening reminder job
   url: /mail/send-reminders/evening
   schedule: every day 17:00
   timezone: US/Pacific
 
-- description: daily reminder job
+- description: daily morning reminder job
   url: /mail/send-reminders/morning
   schedule: every day 05:00
+  timezone: US/Pacific
+
+- description: daily expired link purge
+  url: /tasks/delete-links
+  schedule: every day 00:00
   timezone: US/Pacific

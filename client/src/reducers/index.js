@@ -114,10 +114,11 @@ function unsubscribe(state = {isLoading: false}, action) {
 function ideas(state = {}, action) {
   switch (action.type) {
     case ActionTypes.IDEAS_REQUEST:
+      // Determine which page was requested.
       const endpoint = action.endpoint;
       const split = endpoint && endpoint.split('=');
       let page = split && split[1];
-      page = page ? parseInt(page) : 1;
+      page = page ? parseInt(page, 10) : 1;
       return {
         ...state,
         isLoading: true,

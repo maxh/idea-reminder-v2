@@ -6,19 +6,24 @@ import { Button } from 'react-bootstrap';
 
 import { startSignIn, pushPath } from '../actions/index';
 
+import Spinner from './Spinner';
+
 
 class SignInButtonBase extends React.Component {
 
   render() {
-    if (this.props.authLib.isLoading) {
-      return null;
+    if (this.props.authLib.isLoading || this.props.account.isLoading) {
+      return <Spinner />;
     } else if (this.props.authLib.error) {
       return <div className="error">{this.props.authLib.error}</div>;
-    } else if (this.props.googleUser.current) {
+    } else if (this.props.googleUser.current && this.props.account.current) {
+      const signUp = Date.parse(this.props.account.current.signUpDate);
+      const isNew = signUp + 60 * 1000 > Date.now();
       return (
         <div>
           <span className="glyphicon glyphicon-ok"></span>
           Welcome, {this.props.googleUser.current.profileObj.name}.
+          {isNew && ' You will receive a welcome email shortly.'}
         </div>
       );
     } else {

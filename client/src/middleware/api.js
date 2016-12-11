@@ -69,9 +69,16 @@ export default store => next => action => {
 
   const [ requestType, successType, failureType ] = types
 
+  const state = store.getState();
+  
   // Look for auth values, if any.
-  const linkCode = store.getState().linkCode;
-  const currentGoogleUser = store.getState().googleUser.current;
+  let linkCode = '';
+  try {
+    linkCode = state.routing.locationBeforeTransitions.query.linkCode;
+  } catch (e) {
+    linkCode = null;
+  }
+  const currentGoogleUser = state.googleUser.current;
   const tokenId = currentGoogleUser && currentGoogleUser.tokenId;
 
   next(actionWith({ type: requestType, endpoint: endpoint }))
