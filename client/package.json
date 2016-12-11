@@ -9,6 +9,7 @@
   "dependencies": {
     "bootstrap": "^3.3.7",
     "firebase": "^3.5.3",
+    "humps": "^2.0.0",
     "react": "^15.3.2",
     "react-bootstrap": "^0.30.6",
     "react-bootstrap-switch": "^15.0.3",

@@ -37,6 +37,7 @@ class BaseHandler(webapp2.RequestHandler):
     if result is None:
       result = {'message': 'Unknown server error.'}
       self.response.set_status(500)
+      logging.exception(exception)
 
     self.response.write(json.dumps(result))
     self.response.headers['Content-Type'] = 'application/json'
