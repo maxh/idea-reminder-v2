@@ -6,7 +6,7 @@ import { startUnsubscribe } from '../actions/index.js';
 class StaticUnsubscribe extends React.Component {
   constructor(props) {
     super(props);
-    this.props.startUnsubscribe();
+    this.props.startUnsubscribe(this.props.location.query.linkCode);
   }
 
   render() {

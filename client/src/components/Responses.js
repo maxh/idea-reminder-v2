@@ -1,7 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { startList, startDownloadCsv } from '../actions/index';
+import { startList } from '../actions/index';
 import { Button, Pagination } from 'react-bootstrap';
+
+import Spinner from './Spinner';
 
 
 const isEmpty = (object) => {
@@ -22,7 +24,7 @@ class StaticList extends React.Component {
     var message;
     var ideas = this.props.ideas.ideas;
     if (this.props.ideas.isLoading) {
-      return false;
+      return <Spinner />;;
     } else if (ideas && isEmpty(ideas)) {
       message = 'No ideas yet!';
     } else if (ideas) {
@@ -36,7 +38,6 @@ class StaticList extends React.Component {
   }
 
   renderIdeas(ideas) {
-    console.log(this.props.ideas);
     const last = this.props.ideas.links.last;
     const maxPage = last && parseInt(last.split('=')[1], 10);
     return (
@@ -101,5 +102,5 @@ const mapStateToProps = (state) => {
 
 export default connect(
   mapStateToProps,
-  {startList: startList, startDownloadCsv: startDownloadCsv}
+  {startList: startList}
 )(StaticList);

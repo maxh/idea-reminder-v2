@@ -26,7 +26,7 @@ LINK_CODE_HEADER = 'X-IdeaReminder-LinkCode'
 
 
 class AuthError(Exception):
-    """Error to indicate crypto failure."""
+  """Error to indicate failure."""
 
 
 # Link-based authentication for unsubscribing.
@@ -53,6 +53,8 @@ def require_link(func):
     # Ensure the link code is valid.
     link_code = self.request.headers.get(LINK_CODE_HEADER)
     link = models.Link.query(models.Link.link_code == link_code).get()
+    logging.info(link_code)
+    logging.info(link)
     if link is None or link.expiration < datetime.datetime.now():
       self.abort_clean('This link has expired.')
 

@@ -9,6 +9,8 @@ import { loadAccount, updateAccount } from '../actions/index';
 
 import { connect } from 'react-redux';
 
+import Spinner from './Spinner';
+
 
 
 class Settings extends React.Component {
@@ -39,7 +41,7 @@ class Settings extends React.Component {
   render() {
     const account = this.state;
     if (this.props.isLoading && !Object.getOwnPropertyNames(account).length) {
-      return false;
+      return <Spinner />;
     }
     return (
       <form className="content">

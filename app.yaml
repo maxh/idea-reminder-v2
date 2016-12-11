@@ -25,6 +25,11 @@ handlers:
   script: server.mail.app
   secure: always
 
+- url: /tasks/.*
+  script: server.tasks.app
+  login: admin
+  secure: always
+
 - url: /favicon\.ico
   static_files: client/build/favicon.ico
   upload: client/build/favicon\.ico

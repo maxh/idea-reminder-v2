@@ -62,7 +62,7 @@ class Unsubscribe(api_base.BaseHandler):
 
   @auth.require_link
   def post(self, account):
-    account.emails_enabed = False
+    account.emails_enabled = False
     account.put()
     self.response.write(json.dumps({}))
     self.response.headers['Content-Type'] = 'application/json'
