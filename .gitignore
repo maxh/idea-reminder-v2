@@ -19,4 +19,7 @@ build
 npm-debug.log
 *~
 *.pyc
+
+# secrets
 secrets.py
+google-application-credentials.json
