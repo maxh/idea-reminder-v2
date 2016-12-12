@@ -1,22 +1,18 @@
 {% set subject = 'Welcome to ' + app_name %}
 {% if format == 'html' %}
-Welcome to {{ app_name }}! Please <a href="{{ verification_link }}">click here</a> to verify your subscription. The deal is:
+Welcome to {{ app_name }}! The deal is:
 <ol>
-  <li>Every day you'll receive an "Idea Reminder" email from us.</li>
+  <li>Every day you'll receive an "{{ app_name }}" email from us.</li>
   <li>Reply to the email with a short description of a new idea.</li>
-  <li>Your replies will be stored in a Google Spreadsheet visible only to you.</li>
+  <li>Your replies will be <a href="https://ideareminder.com/responses">stored</a> and visible only to you.</li>
 </ol>
 <p>You can unsubscribe at anytime.</p>
 {% else %}
-Welcome to Idea Reminder!  Please click this link to verify your subscription:
+Welcome to {{ app_name }}!  The deal is:
 
-{{ verification_link }}
-
-The deal is:
-
-- Every day you'll receive an "Idea Reminder" email from us.
+- Every day you'll receive an "{{ app_name }}" email from us.
 - Reply to the email with a short description of a new idea.
-- Your replies will be stored in a Google Spreadsheet visible only to you.
+- Your replies will be stored and visible only to you at https://ideareminder.com/responses
 
 You can unsubscribe at anytime.
 {% endif %}

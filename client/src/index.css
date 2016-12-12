@@ -197,12 +197,9 @@ li.settings {
 
 /* Donate */
 
-.\/donate .content {
-  width: 200px;
-}
-
-.\/donate .btn {
-  margin-top: 12px;
+.\/donate .form-group {
+  margin-top: 10px;
+  width: 120px;
 }
 
 /* Ideas */

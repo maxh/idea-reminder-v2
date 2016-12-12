@@ -125,7 +125,7 @@ def send_email_from_template(email_address, template, params={}):
   send_email(email_address, template.module.subject, body, html_body)
 
 
-def send_email(address, subject, text_part, html_part):
+def send_email(address, subject, text_part, html_part=None):
   mailjet = mailjet_rest.Client(
       auth=(secrets.MJ_APIKEY_PUBLIC, secrets.MJ_APIKEY_PRIVATE))
   data = {
