@@ -107,7 +107,7 @@ li.settings {
 }
 
 .\/ { 
-  background: url(marin-sunrise.jpg) no-repeat center center fixed; 
+  background: url(marin-sunrise.svg) no-repeat center center fixed; 
   background-size: cover;
   min-height: 100%;
 }
@@ -193,6 +193,16 @@ li.settings {
 
 .\/settings .content {
   width: 200px;
+}
+
+/* Donate */
+
+.\/donate .content {
+  width: 200px;
+}
+
+.\/donate .btn {
+  margin-top: 12px;
 }
 
 /* Ideas */

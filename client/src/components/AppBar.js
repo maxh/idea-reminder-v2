@@ -34,6 +34,9 @@ class AppBar extends React.Component {
 
           {signedIn &&
             <Nav pullRight>
+              <LinkContainer to="/donate">
+                <NavItem>Donate</NavItem>
+              </LinkContainer>
               <LinkContainer to="/responses">
                 <NavItem>Responses</NavItem>
               </LinkContainer>
@@ -44,7 +47,7 @@ class AppBar extends React.Component {
             </Nav>
           }
 
-          {false && !signedIn &&
+          {!signedIn &&
             <Nav pullRight>
               <LinkContainer to="/donate">
                 <NavItem>Donate</NavItem>
