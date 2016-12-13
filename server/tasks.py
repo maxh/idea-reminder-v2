@@ -6,6 +6,7 @@ from google.appengine.ext import ndb
 import config
 import models
 import secrets
+import mail
 
 
 class DeleteExpiredLinks(webapp2.RequestHandler):
@@ -20,4 +21,5 @@ class DeleteExpiredLinks(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/tasks/delete-links', DeleteExpiredLinks),
+    ('/tasks/receive-mail', mail.HandleReply),
 ], debug=config.DEBUG)
