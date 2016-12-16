@@ -32,7 +32,7 @@ class SignInButtonBase extends React.Component {
             onClick={this.props.startSignIn}
             className="sign-in-button"
             disabled={this.props.googleUser.isLoading}>
-          <img style={{'verticalAlign': 'middle', 'marginTop': '-1px', 'marginRight': '6px'}} alt="Google" src="/static/g-logo.svg" />
+          <img className="g-logo" alt="Google" src="/static/g-logo.svg" />
           <span>Sign up with Google</span>
         </Button>
       )

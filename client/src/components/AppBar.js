@@ -34,6 +34,9 @@ class AppBar extends React.Component {
 
           {signedIn &&
             <Nav pullRight>
+              <LinkContainer to="/about">
+                <NavItem>About</NavItem>
+              </LinkContainer>
               <LinkContainer to="/donate">
                 <NavItem>Donate</NavItem>
               </LinkContainer>
@@ -49,6 +52,9 @@ class AppBar extends React.Component {
 
           {!signedIn &&
             <Nav pullRight>
+              <LinkContainer to="/about">
+                <NavItem>About</NavItem>
+              </LinkContainer>
               <LinkContainer to="/donate">
                 <NavItem>Donate</NavItem>
               </LinkContainer>

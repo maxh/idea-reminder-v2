@@ -141,6 +141,15 @@ li.settings {
   .\/ .how .steps {
     flex-direction: row;
   }
+
+  .\/ footer {
+    background-color: transparent;
+    color: white;
+  }
+
+  .\/ footer a {
+    color: white;
+  }
 }
 
 .\/ .subscribe-container {
@@ -181,6 +190,7 @@ li.settings {
   padding-right: 6px;
 }
 
+
 /* Sign in */
 
 .\/sign-in .content {
@@ -215,4 +225,36 @@ table.ideas td {
 table.ideas {
   text-align: left;
   margin: auto;
+}
+
+footer {
+  position: fixed;
+  text-align: center;
+  left: 0px;
+  bottom: 0px;
+  height: 30px;
+  width: 100%;
+  padding-top: 4px;
+  background-color: white;
+}
+
+footer span {
+  margin-left: 8px;
+  margin-right: 8px;
+}
+
+.g-logo {
+  vertical-align: middle;
+  margin-top: -1px;
+  margin-right: 6px;
+}
+
+h1 {
+  margin-top: 40px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+h2 {
+  font-size: 20px;
 }

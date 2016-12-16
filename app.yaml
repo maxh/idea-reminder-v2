@@ -25,6 +25,10 @@ handlers:
   script: server.mail.app
   secure: always
 
+- url: /tasks/receive-mail-response
+  script: server.tasks.app
+  secure: always
+
 - url: /tasks/.*
   script: server.tasks.app
   login: admin
@@ -43,6 +47,7 @@ handlers:
 - url: /static
   static_dir: client/build/static
   secure: always
+  expiration: 10m
 
 - url: /.*
   static_files: client/build/index.html

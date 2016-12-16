@@ -21,5 +21,5 @@ class DeleteExpiredLinks(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/tasks/delete-links', DeleteExpiredLinks),
-    ('/tasks/receive-mail', mail.HandleReply),
+    ('/tasks/receive-response', mail.HandleReply),
 ], debug=config.DEBUG)

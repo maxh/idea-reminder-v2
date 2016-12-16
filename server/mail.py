@@ -65,21 +65,25 @@ class HandleReply(webapp2.RequestHandler):
     """Validates simple HTTP auth from Mailjet."""
     auth = self.request.authorization
     if auth is None:
+      logging.warning('No authorization provided.')
       self.abort(401, 'Authorization required.')
     encoded_auth = auth[1]
     username_colon_pass = base64.b64decode(encoded_auth)
     username, password = username_colon_pass.split(':')
     if (username != secrets.MJ_PARSE_USERNAME or
         password != secrets.MJ_PARSE_PASSWORD):
+      logging.warning('Invalid credentials: %s, %s' % (username, password))
       self.abort(401, 'Invalid credentials.')
 
   def post(self):
-    self.validate_simple_auth()
+    logging.info('got mail')
+    # self.validate_simple_auth()
 
     try:
       body = json.loads(self.request.body)
     except ValueError:
       self.abort(400, 'Expected JSON email description.')
+
 
     email = body.get('Sender')
     account = models.Account.query(models.Account.email == email).get()
@@ -91,6 +95,10 @@ class HandleReply(webapp2.RequestHandler):
 
     full_email_text = body.get('Text-part')
     response_text = extract_latest_message(full_email_text)
+    logging.info('got mail')
+    logging.info(email)
+    logging.info(body)
+    logging.info(response_text)
 
     response = models.Response(
         parent=account.key,
